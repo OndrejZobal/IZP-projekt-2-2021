@@ -2,12 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include "./structs.h"
-
+#include "./growstr.c"
 
 
 // TODO Az bude struktura hotova, tak to bude vracet array ty struktury
 void parseFile(char* filePath) {
+    FILE *file = fopen(filePath, "r");
 
+
+    if (fclose(file) != 0) {
+        printf("Sussy bakka cummy fucca!");
 }
 
 char* readFilePath(int argc, char **argv) {
