@@ -2,17 +2,18 @@
  * 2. IZP projekt 2021
  * @author Ondřej Zobal <xzobal01@stud.fit.vutbr.cz>
  * @author Petr Kolouch <xkolou05@stud.fit.vutbr.cz>
- * @author Vladimiír Hucovič <xhucov00@stud.fit.vutbr.cz>
+ * @author Vladimír Hucovič <xhucov00@stud.fit.vutbr.cz>
  */
 
 #include <stdlib.h>
 #include <string.h>
 #include "./structs.h"
 #include "./growstr.c"
+#include "./growsubj.h"
 
 // TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
 
-Subject parseLine(char *line) {
+Subject *parseLine(char *line) {
     // Calls a lot of helper fucntions
 
     // The result is encapsulated in Subject.
