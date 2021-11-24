@@ -26,7 +26,7 @@ typedef struct
 {
     int id;
     int size;
-    char **obsah;
+    char **content;
 } Set;
 
 typedef struct
