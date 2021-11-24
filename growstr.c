@@ -80,7 +80,7 @@ int growStrAdd(GrowStr *growstr, char ch) {
  * @return content of growstr
  */
 char *growStrConvertToStr(GrowStr *growstr) {
-    char *str = malloc(sizeof(char) * growstr->length);
+    char *str = malloc(sizeof(char) * growstr->length + 1);
     if (str == NULL) {
         printf("SUSUS hella susu");
         exit(1);
