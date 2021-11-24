@@ -90,6 +90,7 @@ char *growStrConvertToStr(GrowStr *growstr)
     char *str = malloc(sizeof(char) * growstr->length);
     if (str == NULL)
     {
+
         printf("SUSUS hella susu");
         exit(1);
     }
@@ -103,6 +104,7 @@ char *growStrConvertToStr(GrowStr *growstr)
 }
 
 // Test function do not call
+/*
 int main()
 {
     char *test = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopa"
@@ -118,3 +120,4 @@ int main()
     }
     printf("FINAL: %s\n", gs->content);
 }
+*/
