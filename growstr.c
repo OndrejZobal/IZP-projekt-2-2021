@@ -104,20 +104,16 @@ char *growStrConvertToStr(GrowStr *growstr)
 }
 
 // Test function do not call
-/*
-int main()
-{
-    char *test = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopa"
-                 "sdfghjklzxcvbnm"
-                 "123456789012345678901234567890";
-    GrowStr *gs = growStrCreate();
-    printf("Grow string created!\n");
-    for (int i = 0; test[i] != '\0'; i++)
-    {
-        growStrAdd(gs, test[i]);
-        printf("Element %d added\n", i);
-        printf("%s\n", gs->content);
-    }
-    printf("FINAL: %s\n", gs->content);
-}
-*/
+// int main() {
+//     char *test = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopa"
+//                  "sdfghjklzxcvbnm"
+//                  "123456789012345678901234567890";
+//     GrowStr *gs = growStrCreate();
+//     printf("Grow string created!\n");
+//     for (int i = 0; test[i] != '\0'; i++) {
+//         growStrAdd(gs, test[i]);
+//         printf("Element %d added\n", i);
+//         printf("%s\n", gs->content);
+//     }
+//     printf("FINAL: %s\n", gs->content);
+// }
