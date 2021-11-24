@@ -5,8 +5,8 @@ typedef struct testType
 
 typedef enum
 {
-    Set,
-    Relation
+    SetType,
+    RelationType
 } SubjectType;
 
 typedef struct

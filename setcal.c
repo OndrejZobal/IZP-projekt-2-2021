@@ -1,19 +1,56 @@
-#include <stdio.h>
+/**
+ * 2. IZP projekt 2021
+ * @author Ondřej Zobal <xzobal01@stud.fit.vutbr.cz>
+ * @author Petr Kolouch <xkolou05@stud.fit.vutbr.cz>
+ * @author Vladimiír Hucovič <xhucov00@stud.fit.vutbr.cz>
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include "./structs.h"
 #include "./growstr.c"
 
+// TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
 
-// TODO Az bude struktura hotova, tak to bude vracet array ty struktury
-void parseFile(char* filePath) {
+Subject parseLine(char *line) {
+    // Calls a lot of helper fucntions
+
+    // The result is encapsulated in Subject.
+
+    return malloc(sizeof(Subject));
+}
+
+/**
+ * Parses the intire file into subjects. Calls many helper functions
+ * @param filepath path to file that will be parsed.
+ * @param subjc The count of subjects in subjv
+ * @param subjv Empty pointer for returning the subjects.
+ */
+void parseFile(char* filePath, int *subjc, Subject *subjv) {
     FILE *file = fopen(filePath, "r");
+
+    subjv = malloc(sizeof(Subject)*1000); // Before we have generic grow type...
+    // For every line:
+    //  Read line char by char and store it in growstr.
+
+    //  Convert Growstr into an array.
+
+    //  Send the line into a processing fucntion. (Returns Subject)
+    // parseLine();
+
 
 
     if (fclose(file) != 0) {
         printf("Sussy bakka cummy fucca!");
+    }
 }
 
+/**
+ * Functions returns the file from args.
+ * @param argc count of arguments.
+ * @param argv values of argumets.
+ * @return Path to file from arg or NULL if no path was given
+*/
 char* readFilePath(int argc, char **argv) {
     if (argc < 1) {
         return NULL;
@@ -31,6 +68,7 @@ int main(int argc, char **argv) {
     }
 
     // Parsing the content into structs.
-    parseFile(filePath); // TODO Dunno co to bude vracet to vymyslíme později
+    //parseFile(filePath); // TODO Dunno co to bude vracet to vymyslíme později
     return 0;
 }
+
