@@ -5,6 +5,8 @@
  * @author Vladimiír Hucovič <xhucov00@stud.fit.vutbr.cz>
  */
 
+// TODO: limit the input length
+
 #include <stdlib.h>
 #include <string.h>
 #include "./structs.h"
@@ -49,19 +51,32 @@ Set *setCreate(int id, int size, char *contentString)
     return set;
 }
 
-Subject parseLine(char *line, SubjectType type)
+Subject *parseLine(int id, int size, char *contentString, SubjectType type)
 {
-    Relation relation;
-    Set set;
+    Relation *relation;
+    Set *set;
+    Universe *universe;
 
-    Subject subjekt;
+    if (type == RelationType)
+    {
+        relation = relationCreate();
+    }
+    else if (type == SetType)
+    {
+        set = setCreate(id, size, contentString);
+    }
+    else if (type == UniverseType)
+    {
+        universe = universeCreate();
+    }
 
-    if (line[0] == 'R')
-    {
-    }
-    else if (line[0] == 'S')
-    {
-    }
+    Subject *subjekt;
+    subjekt->id = id;
+    subjekt->relation_p = relation;
+    subjekt->set_p = set;
+    subjekt->universe_p = universe;
+    subjekt->subjectType = type;
+
     // Calls a lot of helper fucntions
 
     // The result is encapsulated in Subject.
@@ -84,7 +99,7 @@ SubjectType setType(char character)
     {
         return UniverseType;
     }
-    return 0;
+    return -1;
 }
 
 /**
@@ -101,6 +116,7 @@ void parseFile(char *filePath, int *subjc, Subject *subjv)
     char character;
     // count of spaces = count of strings = size of relation/set array
     int count = 0;
+    int id = 0;
     // string to return growStrComvertToStr to
     char *string;
 
@@ -115,9 +131,14 @@ void parseFile(char *filePath, int *subjc, Subject *subjv)
     // read current charatcter while not at the end of the file
     while ((character = getc(file)) != EOF)
     {
+        // only set SubjectType using fist character of the line
         if (isFirstChar)
         {
             type = setType(character);
+            if (type == -1)
+            {
+                break;
+            }
             isFirstChar = 0;
             continue;
         }
@@ -131,10 +152,11 @@ void parseFile(char *filePath, int *subjc, Subject *subjv)
             printf("FINAL: %s count: %d type: %d\n", gs->content, count, type);
             string = growStrConvertToStr(gs);
             printf("string from growstrconvert: %s\n", string);
-            //parseLine(string, count);
+            parseLine(id, count, string, type);
             gs = growStrCreate();
             count = 0;
             type = -1;
+            id++;
             isFirstChar = 1;
         }
         else
