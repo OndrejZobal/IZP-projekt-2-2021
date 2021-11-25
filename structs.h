@@ -42,6 +42,7 @@ typedef struct
     int id;
     Set *set_p;
     Relation *relation_p;
+    Universe *universe_p;
     SubjectType subjectType;
 
 } Subject;
