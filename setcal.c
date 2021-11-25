@@ -19,16 +19,22 @@
  * @param string string to split by a delimiter.
  * @param array array to fill the split string with.
 */
-void splitStringintoArray(char* string, char** array)
+void splitStringintoArray(char* string, char** array, SubjectType type)
 {
     int i = 0;
     char* strtoken = strtok(string, " ");
     while (strtoken != NULL)
     {
-        array[i++] = strtoken;
+        if (type == SetType) {
+            array[i++] = (int)strtoken;
+        }
+        else {
+            array[i++] = strtoken;
+        }
         strtoken = strtok(NULL, " ");
     }
 }
+
 
 /**
  * Function creates a set object with specified params
@@ -40,7 +46,7 @@ Set* setCreate(int id, int size, char* contentString)
 {
 
     int content[size];
-    splitStringintoArray(contentString, content);
+    splitStringintoArray(contentString, content, SetType);
 
     Set* set = malloc(sizeof(Set));
 
@@ -48,20 +54,28 @@ Set* setCreate(int id, int size, char* contentString)
     set->size = size;
     set->content = content;
 
+    for (int i = 0; i < size; i++) {
+        printf("set content at index %d = %d\n", i, set->content[i]);
+    }
+
     return set;
 }
 
-Set* universeCreate(int id, int size, char* contentString)
+Universe* universeCreate(int id, int size, char* contentString)
 {
 
     char* content[size];
-    splitStringintoArray(contentString, content);
+    splitStringintoArray(contentString, content, UniverseType);
 
     Universe* universe = malloc(sizeof(Universe));
 
     universe->id = id;
     universe->size = size;
     universe->content = content;
+
+    for (int i = 0; i < size; i++) {
+        printf("universe content at index %d = %s\n", i, universe->content[i]);
+    }
 
     return universe;
 }
@@ -74,7 +88,7 @@ Subject* parseLine(int id, int size, char* contentString, SubjectType type)
 
     if (type == RelationType)
     {
-        relation = relationCreate();
+        //relation = relationCreate();
     }
     else if (type == SetType)
     {
@@ -85,7 +99,7 @@ Subject* parseLine(int id, int size, char* contentString, SubjectType type)
         universe = universeCreate(id, size, contentString);
     }
 
-    Subject* subjekt;
+    Subject* subjekt = malloc(sizeof(Subject));
     subjekt->id = id;
     subjekt->relation_p = relation;
     subjekt->set_p = set;
@@ -97,6 +111,7 @@ Subject* parseLine(int id, int size, char* contentString, SubjectType type)
     // The result is encapsulated in Subject.
 
     //return malloc(sizeof(Subject));
+    printf("id: %d subject type: %d\n", subjekt->id, subjekt->subjectType);
     return subjekt;
 }
 
