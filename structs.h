@@ -6,7 +6,8 @@ typedef struct testType
 typedef enum
 {
     SetType,
-    RelationType
+    RelationType,
+    UniverseType
 } SubjectType;
 
 typedef struct
@@ -26,8 +27,15 @@ typedef struct
 {
     int id;
     int size;
-    char **content;
+    int *content;
 } Set;
+
+typedef struct
+{
+    int id;
+    int size;
+    char **content;
+} Universe;
 
 typedef struct
 {
