@@ -70,7 +70,7 @@ Subject parseLine(char *line, SubjectType type)
     return subjekt;
 }
 
-int setType(char character)
+SubjectType setType(char character)
 {
     if (character == 'S')
     {
@@ -80,10 +80,11 @@ int setType(char character)
     {
         return RelationType;
     }
-    else
+    else if (character == 'U')
     {
-        return -1;
+        return UniverseType;
     }
+    return 0;
 }
 
 /**
@@ -109,26 +110,21 @@ void parseFile(char *filePath, int *subjc, Subject *subjv)
                                             //  Read line char by char and store it in growstr.
     GrowStr *gs = growStrCreate();
     printf("Grow string created!\n");
+    int isFirstChar = 1;
 
     // read current charatcter while not at the end of the file
     while ((character = getc(file)) != EOF)
     {
+        if (isFirstChar)
+        {
+            type = setType(character);
+            isFirstChar = 0;
+            continue;
+        }
         // if endline is reached
         // store the whole string into the string variable
         // call the parsline function with it
         // free the old references and create new growStr
-        if (character == 'S')
-        {
-            type = SetType;
-        }
-        else if (character == 'R')
-        {
-            type = RelationType;
-        }
-        else if (character == 'U' || character == 'C')
-        {
-            continue;
-        }
 
         else if (character == '\n')
         {
@@ -139,6 +135,7 @@ void parseFile(char *filePath, int *subjc, Subject *subjv)
             gs = growStrCreate();
             count = 0;
             type = -1;
+            isFirstChar = 1;
         }
         else
         {
