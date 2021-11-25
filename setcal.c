@@ -5,7 +5,7 @@
  * @author Vladimiír Hucovič <xhucov00@stud.fit.vutbr.cz>
  */
 
-// TODO: limit the input length
+ // TODO: limit the input length
 
 #include <stdlib.h>
 #include <string.h>
@@ -19,10 +19,10 @@
  * @param string string to split by a delimiter.
  * @param array array to fill the split string with.
 */
-void splitStringintoArray(char *string, char **array)
+void splitStringintoArray(char* string, char** array)
 {
     int i = 0;
-    char *strtoken = strtok(string, " ");
+    char* strtoken = strtok(string, " ");
     while (strtoken != NULL)
     {
         array[i++] = strtoken;
@@ -34,15 +34,15 @@ void splitStringintoArray(char *string, char **array)
  * Function creates a set object with specified params
  * @param id id corresponding to the textfile row
  * @param size size of the content array
- * @param contentString string to parse and fill the content array with 
+ * @param contentString string to parse and fill the content array with
 */
-Set *setCreate(int id, int size, char *contentString)
+Set* setCreate(int id, int size, char* contentString)
 {
 
-    char *content[size];
+    int content[size];
     splitStringintoArray(contentString, content);
 
-    Set *set = malloc(sizeof(Set));
+    Set* set = malloc(sizeof(Set));
 
     set->id = id;
     set->size = size;
@@ -51,11 +51,26 @@ Set *setCreate(int id, int size, char *contentString)
     return set;
 }
 
-Subject *parseLine(int id, int size, char *contentString, SubjectType type)
+Set* universeCreate(int id, int size, char* contentString)
 {
-    Relation *relation;
-    Set *set;
-    Universe *universe;
+
+    char* content[size];
+    splitStringintoArray(contentString, content);
+
+    Universe* universe = malloc(sizeof(Universe));
+
+    universe->id = id;
+    universe->size = size;
+    universe->content = content;
+
+    return universe;
+}
+
+Subject* parseLine(int id, int size, char* contentString, SubjectType type)
+{
+    Relation* relation;
+    Set* set;
+    Universe* universe;
 
     if (type == RelationType)
     {
@@ -67,10 +82,10 @@ Subject *parseLine(int id, int size, char *contentString, SubjectType type)
     }
     else if (type == UniverseType)
     {
-        universe = universeCreate();
+        universe = universeCreate(id, size, contentString);
     }
 
-    Subject *subjekt;
+    Subject* subjekt;
     subjekt->id = id;
     subjekt->relation_p = relation;
     subjekt->set_p = set;
@@ -108,23 +123,23 @@ SubjectType setType(char character)
  * @param subjc The count of subjects in subjv
  * @param subjv Empty pointer for returning the subjects.
  */
-void parseFile(char *filePath, int *subjc, Subject *subjv)
+void parseFile(char* filePath, int* subjc, Subject* subjv)
 {
 
-    FILE *file = fopen(filePath, "r");
+    FILE* file = fopen(filePath, "r");
     // current character returned from getc
     char character;
     // count of spaces = count of strings = size of relation/set array
     int count = 0;
     int id = 0;
     // string to return growStrComvertToStr to
-    char *string;
+    char* string;
 
     SubjectType type = -1;
     subjv = malloc(sizeof(Subject) * 1000); // Before we have generic grow type...
                                             // For every line:
                                             //  Read line char by char and store it in growstr.
-    GrowStr *gs = growStrCreate();
+    GrowStr* gs = growStrCreate();
     printf("Grow string created!\n");
     int isFirstChar = 1;
 
@@ -187,7 +202,7 @@ void parseFile(char *filePath, int *subjc, Subject *subjv)
  * @param argv values of argumets.
  * @return Path to file from arg or NULL if no path was given
 */
-char *readFilePath(int argc, char **argv)
+char* readFilePath(int argc, char** argv)
 {
     if (argc < 1)
     {
@@ -198,10 +213,10 @@ char *readFilePath(int argc, char **argv)
     return argv[1];
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     // Getting the path to the file.
-    char *filePath = readFilePath(argc, argv);
+    char* filePath = readFilePath(argc, argv);
     if (filePath == NULL)
     {
         return 1;
@@ -209,7 +224,7 @@ int main(int argc, char **argv)
 
     Subject subjekt;
     int count = 5;
-    int *count_p;
+    int* count_p;
     count_p = &count;
 
     parseFile(filePath, count_p, &subjekt);
@@ -224,7 +239,7 @@ int main(int argc, char **argv)
         printf("set content string at index %d = %s\n", i, testSet->content[i]);
     }
 */
-    // Parsing the content into structs.
-    //parseFile(filePath); // TODO Dunno co to bude vracet to vymyslíme později
+// Parsing the content into structs.
+//parseFile(filePath); // TODO Dunno co to bude vracet to vymyslíme později
     return 0;
 }
