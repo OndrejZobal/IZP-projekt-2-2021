@@ -22,12 +22,15 @@
 */
 void splitStringintoArray(char* string, char** array, SubjectType type)
 {
+    printf("string: %s\n", string);
     int i = 0;
-    char* strtoken = strtok(string, " ");
+    char* tempstr = calloc(strlen(string) + 1, sizeof(char));
+    strcpy(tempstr, string);
+    char* strtoken = strtok(tempstr, " ");
     while (strtoken != NULL)
     {
         if (type == SetType) {
-            array[i++] = (int)strtoken;
+            //array[i++] = (int)strtoken;
         }
         else {
             array[i++] = strtoken;
@@ -65,7 +68,7 @@ Set* setCreate(int id, int size, char* contentString)
 Universe* universeCreate(int id, int size, char* contentString)
 {
 
-    char* content[size];
+    char** content = malloc(sizeof(char*) * size);
     splitStringintoArray(contentString, content, UniverseType);
 
     Universe* universe = malloc(sizeof(Universe));
@@ -244,6 +247,8 @@ int main(int argc, char** argv)
     count_p = &count;
 
     parseFile(filePath, count_p, &subjekt);
+
+    Universe* uni = universeCreate(0, 3, "Aha Hah Joke");
 
     /*
     char contentString[] = "S a b c x";
