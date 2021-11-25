@@ -1,3 +1,7 @@
+#ifndef main
+#include <string.h>
+#endif
+
 typedef struct testType
 {
     int test;
@@ -30,12 +34,22 @@ typedef struct
     int *content;
 } Set;
 
+
 typedef struct
 {
     int id;
     int size;
     char **content;
 } Universe;
+
+int getItemIndex(Universe *universe, char* word){
+    for (int i = 0; i < universe->size; i++){
+        if (strcmp(word, universe->content[i])){
+            return i;
+        }
+    }
+    return -1;
+}
 
 typedef struct
 {
