@@ -1,5 +1,6 @@
 #ifndef main
 #include <string.h>
+#include <stdio.h>
 #endif
 
 typedef struct testType
@@ -16,8 +17,8 @@ typedef enum
 
 typedef struct
 {
-    char* x;
-    char* y;
+    int x;
+    int y;
 } Pair;
 
 typedef struct
@@ -33,7 +34,6 @@ typedef struct
     int size;
     int* content;
 } Set;
-
 
 typedef struct
 {
@@ -58,8 +58,16 @@ int getItemIndex(Universe* universe, char* word) {
     return -1;
 }
 
-char* getItemName(Universe* universe, int index) {
+char *getItemName(Universe* universe, int index) {
     return universe->content[index];
+}
+
+void printUniverse(Universe *universe){
+    printf("U");
+    for(int i = 0; i < universe->size; i++) {
+        printf(" %s", universe->content[i]);
+    }
+    printf("\n");
 }
 
 typedef struct
@@ -71,3 +79,35 @@ typedef struct
     SubjectType subjectType;
 
 } Subject;
+
+void printSet(Universe *universe, Set *set){
+    printf("S");
+    for(int i = 0; i < set->size; i++){
+        if (set->content[i] == -1){
+            printf(" OwQ");
+        }
+        printf(" %s", getItemName(universe, set->content[i]));
+    }
+    printf("\n");
+}
+
+void printRelation(Universe *universe, Relation *rel){
+    printf("R");
+    for(int i = 0; i < rel->size; i++){
+        printf(" (%s %s)", universe->content[rel->pairs[i].x], universe->content[rel->pairs[i].x]);
+    }
+    printf("\n");
+}
+
+void printSubject(Universe *universe, Subject *subject){
+    switch(subject->subjectType){
+        case SetType:
+            printSet(universe, subject->set_p);
+            break;
+        case RelationType:
+            printRelation(universe, subject->relation_p);
+            break;
+        case UniverseType:
+            printUniverse(universe);
+    }
+}
