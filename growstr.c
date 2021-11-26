@@ -15,18 +15,18 @@ typedef struct growStr
     // Size of allocated memroy for the string.
     int size;
     // String storing the content.
-    char *content;
+    char* content;
 } GrowStr;
 
 /**
  * This function creates a new instance of GrowString
  * @return An empty GrowStr
  */
-GrowStr *growStrCreate()
+GrowStr* growStrCreate()
 {
     // Allocating the string array
-    char *content = malloc(sizeof(char) * GROWSTR_DEFAULT_SIZE);
-    GrowStr *gs = malloc(sizeof(GrowStr));
+    char* content = malloc(sizeof(char) * GROWSTR_DEFAULT_SIZE);
+    GrowStr* gs = malloc(sizeof(GrowStr));
 
     if (content == NULL || gs == NULL)
     {
@@ -53,18 +53,18 @@ GrowStr *growStrCreate()
  * @return GROWSTR_ERR on if the appendinw was unsuccessfull, otherwise
  *GROWSTR_OK.
  */
-int growStrAdd(GrowStr *growstr, char ch)
+int growStrAdd(GrowStr* growstr, char ch)
 {
     // Checking if the string is large enough for another char to be added to it
     // (accounts for terminator).
     if (growstr->length + 1 > growstr->size - 1)
     {
         // Reallocating the array.
-        char *buffer = NULL;
+        char* buffer = NULL;
         // To make the need for reallocation less frewquent the new string size will
         // be multiplied by a constant.
         int newSize = growstr->size * GROWSTR_SIZE_MULTIPLIER;
-        buffer = (char *)realloc(growstr->content, newSize * sizeof(char));
+        buffer = (char*)realloc(growstr->content, newSize * sizeof(char));
         if (buffer == NULL)
         {
             return GROWSTR_ERR;
@@ -85,15 +85,11 @@ int growStrAdd(GrowStr *growstr, char ch)
  * @param growstr GrowStr that will be converted to string
  * @return content of growstr
  */
-char *growStrConvertToStr(GrowStr *growstr)
+char* growStrConvertToStr(GrowStr* growstr)
 {
-    char *str = malloc(sizeof(char) * growstr->length);
+    char* str = malloc(sizeof(char) * growstr->length);
     if (str == NULL)
     {
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
         printf("SUSUS hella susu");
         exit(1);
     }
@@ -107,7 +103,6 @@ char *growStrConvertToStr(GrowStr *growstr)
 }
 
 // Test function do not call
-<<<<<<< Updated upstream
 // int main() {
 //     char *test = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopa"
 //                  "sdfghjklzxcvbnm"
@@ -121,20 +116,3 @@ char *growStrConvertToStr(GrowStr *growstr)
 //     }
 //     printf("FINAL: %s\n", gs->content);
 // }
-=======
-int main()
-{
-    char *test = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopa"
-                 "sdfghjklzxcvbnm"
-                 "123456789012345678901234567890";
-    GrowStr *gs = growStrCreate();
-    printf("Grow string created!\n");
-    for (int i = 0; test[i] != '\0'; i++)
-    {
-        growStrAdd(gs, test[i]);
-        printf("Element %d added\n", i);
-        printf("%s\n", gs->content);
-    }
-    printf("FINAL: %s\n", gs->content);
-}
->>>>>>> Stashed changes
