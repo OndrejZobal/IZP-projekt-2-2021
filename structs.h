@@ -1,12 +1,29 @@
 #ifndef main
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #endif
 
 typedef struct testType
 {
     int test;
 } TestType;
+
+
+typedef struct
+{
+    int id;
+    int size;
+    char** content;
+} Universe;
+
+void destroyUniverse(Universe *universe){
+    for(int i = 0; i < universe->size; i++) {
+        free(universe->content[i]);
+    }
+    free(universe->content);
+    free(universe);
+}
 
 typedef enum
 {
@@ -21,12 +38,40 @@ typedef struct
     int y;
 } Pair;
 
+Pair *createPair(int x, int y){
+    Pair *pair = malloc(sizeof(Pair));
+    pair->x = x;
+    pair->y = y;
+    return pair;
+}
+
+void destroyPair(Pair *pair){
+    free(pair);
+}
+
+void printPair(Universe *universe, Pair *pair){
+    printf("(%s %s)", universe->content[pair->x], universe->content[pair->y]);
+}
+
 typedef struct
 {
     int id;
     int size;
-    Pair pairs[];
+    Pair *pairs;
 } Relation;
+
+Relation *CreateEmptyRelation(int id){
+    Relation *relation = malloc(sizeof(Relation));
+    relation->size = 0;
+    relation->id = id;
+    relation->pairs = NULL;
+    return relation;
+}
+
+void destroyRelation(Relation *relation) {
+    free(relation->pairs);
+    free(relation);
+}
 
 typedef struct
 {
@@ -35,12 +80,10 @@ typedef struct
     int* content;
 } Set;
 
-typedef struct
-{
-    int id;
-    int size;
-    char** content;
-} Universe;
+void destroySet(Set *set){
+    free(set->content);
+    free(set);
+}
 
 /**
  * This functin translates words into their numeric
@@ -80,11 +123,25 @@ typedef struct
 
 } Subject;
 
+void destroySubject(Subject *subject){
+    switch(subject->subjectType){
+        case SetType:
+            destroySet(subject->set_p);
+            break;
+        case RelationType:
+            destroyRelation(subject->relation_p);
+            break;
+        case UniverseType:
+            destroyUniverse(subject->universe_p);
+            break;
+    }
+}
+
 void printSet(Universe *universe, Set *set){
     printf("S");
     for(int i = 0; i < set->size; i++){
         if (set->content[i] == -1){
-            printf(" OwQ");
+            continue;
         }
         printf(" %s", getItemName(universe, set->content[i]));
     }
@@ -94,7 +151,8 @@ void printSet(Universe *universe, Set *set){
 void printRelation(Universe *universe, Relation *rel){
     printf("R");
     for(int i = 0; i < rel->size; i++){
-        printf(" (%s %s)", universe->content[rel->pairs[i].x], universe->content[rel->pairs[i].x]);
+        printf(" ");
+        printPair(universe, rel[i].pairs);
     }
     printf("\n");
 }
@@ -109,5 +167,6 @@ void printSubject(Universe *universe, Subject *subject){
             break;
         case UniverseType:
             printUniverse(universe);
+            break;
     }
 }
