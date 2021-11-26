@@ -42,13 +42,24 @@ typedef struct
     char **content;
 } Universe;
 
+/**
+ * This functin translates words into their numeric
+ * representation.
+ * @param universe Universe to translate from
+ * @param the string to be translated.
+ * @return Numeric representation of the word.
+ */
 int getItemIndex(Universe *universe, char* word){
     for (int i = 0; i < universe->size; i++){
-        if (strcmp(word, universe->content[i])){
+        if (!strcmp(word, universe->content[i])){
             return i;
         }
     }
     return -1;
+}
+
+char *getItemName(Universe *universe, int index){
+    return universe->content[index];
 }
 
 typedef struct
