@@ -2,7 +2,7 @@
 // Created by vladimir on 11/26/21.
 //
 
-#ifndef tests
+#ifndef setcal
 #include "../structs.h"
 #endif
 // returns 1 if element is in set

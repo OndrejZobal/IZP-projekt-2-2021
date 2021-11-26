@@ -2,7 +2,7 @@
 // Created by vladimir on 11/25/21.
 //
 
-#ifndef tests
+#ifndef setcal
 #include "../structs.h"
 #include "isInSet.h"
 #include "areSetsEqual.h"

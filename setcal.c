@@ -5,13 +5,15 @@
  * @author Vladimír Hucovič <xhucov00@stud.fit.vutbr.cz>
  */
 
- // TODO: limit the input length
-
+#define setcal 1
+#define tests 1
 #include <stdlib.h>
 #include <string.h>
 #include "./structs.h"
 #include "./growstr.c"
 #include "./growsubj.c"
+#include "./utility.h"
+#include "set_functins/intersect.c"
 
 // TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
 
@@ -51,6 +53,7 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     for (int i = 0; i < size; i++) {
         int index = getItemIndex(universe, content[i]);
         if (index == -1) {
+            fprintf(stderr, "Attempted to create a set with an element outside of the universe: %s.\n", content[i]);
             exit(1);
         }
         intContent[i] = index;

@@ -1,7 +1,8 @@
-#ifndef main
+#ifndef setcal
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "./utility.h"
 #endif
 
 typedef struct testType
@@ -60,11 +61,19 @@ typedef struct
     Pair *pairs;
 } Relation;
 
-Relation *CreateEmptyRelation(int id){
+Relation *CreateRelation(int id, int size, Pair *content){
+    if (content == NULL && size != 0){
+        content = malloc(sizeof(Pair) * size);
+    }
     Relation *relation = malloc(sizeof(Relation));
-    relation->size = 0;
+
+    if (content == NULL || relation == NULL){
+        memoryCrash();
+    }
+
     relation->id = id;
-    relation->pairs = NULL;
+    relation->size = size;
+    relation->pairs = content;
     return relation;
 }
 
@@ -77,8 +86,24 @@ typedef struct
 {
     int id;
     int size;
-    int* content;
+    int *content;
 } Set;
+
+Set *createSet(int id, int size, int *content){
+    if (content == NULL && size != 0){
+        content = malloc(sizeof(int) * size);
+    }
+    Set *set = malloc(sizeof(Set));
+
+    if (content == NULL || set == NULL){
+        memoryCrash();
+    }
+
+    set->id = id;
+    set->size = size;
+    set->content = content;
+    return set;
+}
 
 void destroySet(Set *set){
     free(set->content);
