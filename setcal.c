@@ -20,21 +20,16 @@
  * @param string string to split by a delimiter.
  * @param array array to fill the split string with.
 */
-void splitStringintoArray(char* string, char** array, SubjectType type)
+void splitStringintoArray(char* string, char** array, SubjectType type, Universe* universe)
 {
-    printf("string: %s\n", string);
     int i = 0;
     char* tempstr = calloc(strlen(string) + 1, sizeof(char));
     strcpy(tempstr, string);
     char* strtoken = strtok(tempstr, " ");
     while (strtoken != NULL)
     {
-        if (type == SetType) {
-            //array[i++] = strtoken;
-        }
-        else {
-            array[i++] = strtoken;
-        }
+        array[i++] = strtoken;
+
         strtoken = strtok(NULL, " ");
     }
 }
@@ -46,22 +41,32 @@ void splitStringintoArray(char* string, char** array, SubjectType type)
  * @param size size of the content array
  * @param contentString string to parse and fill the content array with
 */
-Set* setCreate(int id, int size, char* contentString)
+Set* setCreate(int id, int size, char* contentString, Universe* universe)
 {
+    int intContent[size];
+    char** content = malloc(sizeof(char*) * size);
+    splitStringintoArray(contentString, content, SetType, universe);
+    for (int i = 0; i < universe->size; i++) {
+    }
+    for (int i = 0; i < size; i++) {
+        int index = getItemIndex(universe, content[i]);
+        if (index == -1) {
+            exit(1);
+        }
+        intContent[i] = index;
+    }
 
-    int content[size];
-    splitStringintoArray(contentString, content, SetType);
 
     Set* set = malloc(sizeof(Set));
 
     set->id = id;
     set->size = size;
-    set->content = content;
+    set->content = intContent;
 
     for (int i = 0; i < size; i++) {
         printf("set content at index %d = %d\n", i, set->content[i]);
     }
-
+    printf("*******\n");
     return set;
 }
 
@@ -69,7 +74,7 @@ Universe* universeCreate(int id, int size, char* contentString)
 {
 
     char** content = malloc(sizeof(char*) * size);
-    splitStringintoArray(contentString, content, UniverseType);
+    splitStringintoArray(contentString, content, UniverseType, NULL);
 
     Universe* universe = malloc(sizeof(Universe));
 
@@ -78,17 +83,16 @@ Universe* universeCreate(int id, int size, char* contentString)
     universe->content = content;
 
     for (int i = 0; i < size; i++) {
-        printf("universe content at index %d = %s\n", i, universe->content[i]);
+        //printf("universe content at index %d = %s\n", i, universe->content[i]);
     }
 
     return universe;
 }
 
-Subject* parseLine(int id, int size, char* contentString, SubjectType type)
+Subject* parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe)
 {
     Relation* relation;
     Set* set;
-    Universe* universe;
 
     if (type == RelationType)
     {
@@ -96,11 +100,12 @@ Subject* parseLine(int id, int size, char* contentString, SubjectType type)
     }
     else if (type == SetType)
     {
-        set = setCreate(id, size, contentString);
+        set = setCreate(id, size, contentString, universe);
     }
     else if (type == UniverseType)
     {
-        universe = universeCreate(id, size, contentString);
+        *universe = *universeCreate(id, size, contentString);
+        //printf("created universe with size: %d\n", universe->size);
     }
 
     Subject* subjekt = malloc(sizeof(Subject));
@@ -115,7 +120,7 @@ Subject* parseLine(int id, int size, char* contentString, SubjectType type)
     // The result is encapsulated in Subject.
 
     //return malloc(sizeof(Subject));
-    printf("id: %d subject type: %d\n", subjekt->id, subjekt->subjectType);
+    //printf("id: %d subject type: %d\n", subjekt->id, subjekt->subjectType);
     return subjekt;
 }
 
@@ -146,6 +151,7 @@ void parseFile(char* filePath, int* subjc, Subject* subjv)
 {
 
     FILE* file = fopen(filePath, "r");
+    Universe* universe = malloc(sizeof(Universe));
     // current character returned from getc
     char character;
     // count of spaces = count of strings = size of relation/set array
@@ -159,7 +165,7 @@ void parseFile(char* filePath, int* subjc, Subject* subjv)
                                             // For every line:
                                             //  Read line char by char and store it in growstr.
     GrowStr* gs = growStrCreate();
-    printf("Grow string created!\n");
+    //printf("Grow string created!\n");
     int isFirstChar = 1;
 
     // read current charatcter while not at the end of the file
@@ -183,10 +189,12 @@ void parseFile(char* filePath, int* subjc, Subject* subjv)
 
         else if (character == '\n')
         {
-            printf("FINAL: %s count: %d type: %d\n", gs->content, count, type);
+            //printf("FINAL: %s count: %d type: %d\n", gs->content, count, type);
             string = growStrConvertToStr(gs);
-            printf("string from growstrconvert: %s\n", string);
-            parseLine(id, count, string, type);
+            //printf("string from growstrconvert: %s\n", string);
+            //printf("calling parseline with universe with id: %d\n", universe->id);
+            //printf("calling parseline with size: %d\n", count);
+            parseLine(id, count, string, type, universe);
             gs = growStrCreate();
             count = 0;
             type = -1;
