@@ -16,8 +16,8 @@ typedef enum
 
 typedef struct
 {
-    char *x;
-    char *y;
+    char* x;
+    char* y;
 } Pair;
 
 typedef struct
@@ -31,7 +31,7 @@ typedef struct
 {
     int id;
     int size;
-    int *content;
+    int* content;
 } Set;
 
 
@@ -39,7 +39,7 @@ typedef struct
 {
     int id;
     int size;
-    char **content;
+    char** content;
 } Universe;
 
 /**
@@ -49,25 +49,25 @@ typedef struct
  * @param the string to be translated.
  * @return Numeric representation of the word.
  */
-int getItemIndex(Universe *universe, char* word){
-    for (int i = 0; i < universe->size; i++){
-        if (!strcmp(word, universe->content[i])){
+int getItemIndex(Universe* universe, char* word) {
+    for (int i = 0; i < universe->size; i++) {
+        if (!strcmp(word, universe->content[i])) {
             return i;
         }
     }
     return -1;
 }
 
-char *getItemName(Universe *universe, int index){
+char* getItemName(Universe* universe, int index) {
     return universe->content[index];
 }
 
 typedef struct
 {
     int id;
-    Set *set_p;
-    Relation *relation_p;
-    Universe *universe_p;
+    Set* set_p;
+    Relation* relation_p;
+    Universe* universe_p;
     SubjectType subjectType;
 
 } Subject;

@@ -30,7 +30,7 @@ void splitStringintoArray(char* string, char** array, SubjectType type)
     while (strtoken != NULL)
     {
         if (type == SetType) {
-            //array[i++] = (int)strtoken;
+            //array[i++] = strtoken;
         }
         else {
             array[i++] = strtoken;

@@ -90,7 +90,10 @@ char *growStrConvertToStr(GrowStr *growstr)
     char *str = malloc(sizeof(char) * growstr->length);
     if (str == NULL)
     {
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
         printf("SUSUS hella susu");
         exit(1);
     }
@@ -104,6 +107,7 @@ char *growStrConvertToStr(GrowStr *growstr)
 }
 
 // Test function do not call
+<<<<<<< Updated upstream
 // int main() {
 //     char *test = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopa"
 //                  "sdfghjklzxcvbnm"
@@ -117,3 +121,20 @@ char *growStrConvertToStr(GrowStr *growstr)
 //     }
 //     printf("FINAL: %s\n", gs->content);
 // }
+=======
+int main()
+{
+    char *test = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopa"
+                 "sdfghjklzxcvbnm"
+                 "123456789012345678901234567890";
+    GrowStr *gs = growStrCreate();
+    printf("Grow string created!\n");
+    for (int i = 0; test[i] != '\0'; i++)
+    {
+        growStrAdd(gs, test[i]);
+        printf("Element %d added\n", i);
+        printf("%s\n", gs->content);
+    }
+    printf("FINAL: %s\n", gs->content);
+}
+>>>>>>> Stashed changes
