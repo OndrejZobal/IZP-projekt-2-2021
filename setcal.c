@@ -9,11 +9,12 @@
 #define tests 1
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "./structs.h"
 #include "./growstr.c"
 #include "./growsubj.c"
 #include "./utility.h"
-#include "set_functins/intersect.c"
+//#include "set_functins/intersect.c"
 
 // TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
 
@@ -22,7 +23,7 @@
  * @param string string to split by a delimiter.
  * @param array array to fill the split string with.
 */
-void splitStringintoArray(char* string, char** array, SubjectType type, Universe* universe)
+void splitStringintoArray(char* string, char** array)
 {
     int i = 0;
     char* tempstr = calloc(strlen(string) + 1, sizeof(char));
@@ -45,9 +46,9 @@ void splitStringintoArray(char* string, char** array, SubjectType type, Universe
 */
 Set* setCreate(int id, int size, char* contentString, Universe* universe)
 {
-    int intContent[size];
+    int *intContent = malloc(sizeof(int) * size);
     char** content = malloc(sizeof(char*) * size);
-    splitStringintoArray(contentString, content, SetType, universe);
+    splitStringintoArray(contentString, content);
     for (int i = 0; i < universe->size; i++) {
     }
     for (int i = 0; i < size; i++) {
@@ -66,18 +67,19 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     set->size = size;
     set->content = intContent;
 
+    /*
     for (int i = 0; i < size; i++) {
         printf("set content at index %d = %d\n", i, set->content[i]);
     }
     printf("*******\n");
+    */
     return set;
 }
 
 Universe* universeCreate(int id, int size, char* contentString)
 {
-
     char** content = malloc(sizeof(char*) * size);
-    splitStringintoArray(contentString, content, UniverseType, NULL);
+    splitStringintoArray(contentString, content);
 
     Universe* universe = malloc(sizeof(Universe));
 
@@ -92,7 +94,7 @@ Universe* universeCreate(int id, int size, char* contentString)
     return universe;
 }
 
-Subject* parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe)
+Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe)
 {
     Relation* relation;
     Set* set;
@@ -107,16 +109,13 @@ Subject* parseLine(int id, int size, char* contentString, SubjectType type, Univ
     }
     else if (type == UniverseType)
     {
-        *universe = *universeCreate(id, size, contentString);
-        //printf("created universe with size: %d\n", universe->size);
+        Universe *newUniverse = universeCreate(id, size, contentString);
+        *universe = *newUniverse;
+        // Only free the universe and keep the content.
+        free(newUniverse);
     }
 
-    Subject* subjekt = malloc(sizeof(Subject));
-    subjekt->id = id;
-    subjekt->relation_p = relation;
-    subjekt->set_p = set;
-    subjekt->universe_p = universe;
-    subjekt->subjectType = type;
+    Subject subject = {.id = id, .relation_p = relation, .set_p = set, .universe_p = universe, .subjectType = type};
 
     // Calls a lot of helper fucntions
 
@@ -124,7 +123,7 @@ Subject* parseLine(int id, int size, char* contentString, SubjectType type, Univ
 
     //return malloc(sizeof(Subject));
     //printf("id: %d subject type: %d\n", subjekt->id, subjekt->subjectType);
-    return subjekt;
+    return subject;
 }
 
 SubjectType setType(char character)
@@ -150,39 +149,36 @@ SubjectType setType(char character)
  * @param subjc The count of subjects in subjv
  * @param subjv Empty pointer for returning the subjects.
  */
-void parseFile(char* filePath, int* subjc, Subject* subjv)
+void parseFile(char* filePath)
 {
-
-    FILE* file = fopen(filePath, "r");
     Universe* universe = malloc(sizeof(Universe));
     // current character returned from getc
     char character;
-    // count of spaces = count of strings = size of relation/set array
+    // count of spaces = count of string = size of relation/set array
     int count = 0;
     int id = 0;
     // string to return growStrComvertToStr to
     char* string;
 
-    SubjectType type = -1;
-    subjv = malloc(sizeof(Subject) * 1000); // Before we have generic grow type...
+    SubjectType type;
+    //subjv = malloc(sizeof(Subject) * 1000); // Before we have generic grow type...
                                             // For every line:
                                             //  Read line char by char and store it in growstr.
-    GrowStr* gs = growStrCreate();
-    //printf("Grow string created!\n");
-    int isFirstChar = 1;
+    GrowStr* gstr;
+    GrowSubj* gsubj = growSubjCreate();
 
+    bool isFirstChar = true;
+
+    FILE* file = fopen(filePath, "r");
     // read current charatcter while not at the end of the file
     while ((character = getc(file)) != EOF)
     {
         // only set SubjectType using fist character of the line
         if (isFirstChar)
         {
+            gstr = growStrCreate();
             type = setType(character);
-            if (type == -1)
-            {
-                break;
-            }
-            isFirstChar = 0;
+            isFirstChar = false;
             continue;
         }
         // if endline is reached
@@ -192,17 +188,13 @@ void parseFile(char* filePath, int* subjc, Subject* subjv)
 
         else if (character == '\n')
         {
-            //printf("FINAL: %s count: %d type: %d\n", gs->content, count, type);
-            string = growStrConvertToStr(gs);
-            //printf("string from growstrconvert: %s\n", string);
-            //printf("calling parseline with universe with id: %d\n", universe->id);
-            //printf("calling parseline with size: %d\n", count);
-            parseLine(id, count, string, type, universe);
-            gs = growStrCreate();
+            string = growStrConvertToStr(gstr);
+            growSubjAdd(gsubj, parseLine(id, count, string, type, universe));
+            printSubject(*universe, gsubj->content[gsubj->length-1]);
+
             count = 0;
-            type = -1;
             id++;
-            isFirstChar = 1;
+            isFirstChar = true;
         }
         else
         {
@@ -210,9 +202,9 @@ void parseFile(char* filePath, int* subjc, Subject* subjv)
             {
                 count++;
             }
-            growStrAdd(gs, character);
+            growStrAdd(gstr, character);
             //printf("Element %c added\n", character);
-            //printf("%s\n", gs->content);
+            //printf("%s\n", gstr->content);
         }
     }
     //  Convert Growstr into an array.
@@ -220,9 +212,9 @@ void parseFile(char* filePath, int* subjc, Subject* subjv)
     //  Send the line into a processing fucntion. (Returns Subject)
     // parseLine();
 
-    if (fclose(file) != 0)
+    if (fclose(file))
     {
-        printf("Sussy bakka cummy fucca!");
+        ioCrash(filePath);
     }
 }
 
@@ -249,18 +241,11 @@ int main(int argc, char** argv)
     char* filePath = readFilePath(argc, argv);
     if (filePath == NULL)
     {
+        fprintf(stderr, "No path to file was provided!\n");
         return 1;
     }
 
-    Subject subjekt;
-    int count = 5;
-    int* count_p;
-    count_p = &count;
-
-    parseFile(filePath, count_p, &subjekt);
-
-    Universe* uni = universeCreate(0, 3, "Aha Hah Joke");
-
+    parseFile(filePath);
     /*
     char contentString[] = "S a b c x";
 

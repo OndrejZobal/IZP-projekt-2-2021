@@ -1,7 +1,7 @@
 #ifndef setcal
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "./utility.h"
 #endif
 
@@ -50,8 +50,8 @@ void destroyPair(Pair *pair){
     free(pair);
 }
 
-void printPair(Universe *universe, Pair *pair){
-    printf("(%s %s)", universe->content[pair->x], universe->content[pair->y]);
+void printPair(Universe universe, Pair pair){
+    printf("(%s %s)", universe.content[pair.x], universe.content[pair.y]);
 }
 
 typedef struct
@@ -89,19 +89,9 @@ typedef struct
     int *content;
 } Set;
 
-Set *createSet(int id, int size, int *content){
-    if (content == NULL && size != 0){
-        content = malloc(sizeof(int) * size);
-    }
-    Set *set = malloc(sizeof(Set));
+Set createSet(int id, int size, int *content){
+    Set set = {.id = id, .size = size, .content = content};
 
-    if (content == NULL || set == NULL){
-        memoryCrash();
-    }
-
-    set->id = id;
-    set->size = size;
-    set->content = content;
     return set;
 }
 
@@ -126,14 +116,14 @@ int getItemIndex(Universe* universe, char* word) {
     return -1;
 }
 
-char *getItemName(Universe* universe, int index) {
-    return universe->content[index];
+char *getItemName(Universe universe, int index) {
+    return universe.content[index];
 }
 
-void printUniverse(Universe *universe){
+void printUniverse(Universe universe){
     printf("U");
-    for(int i = 0; i < universe->size; i++) {
-        printf(" %s", universe->content[i]);
+    for(int i = 0; i < universe.size; i++) {
+        printf(" %s", universe.content[i]);
     }
     printf("\n");
 }
@@ -162,33 +152,33 @@ void destroySubject(Subject *subject){
     }
 }
 
-void printSet(Universe *universe, Set *set){
+void printSet(Universe universe, Set set){
     printf("S");
-    for(int i = 0; i < set->size; i++){
-        if (set->content[i] == -1){
+    for(int i = 0; i < set.size; i++){
+        if (set.content[i] == -1){
             continue;
         }
-        printf(" %s", getItemName(universe, set->content[i]));
+        printf(" %s", universe.content[set.content[i]]);
     }
     printf("\n");
 }
 
-void printRelation(Universe *universe, Relation *rel){
+void printRelation(Universe universe, Relation rel){
     printf("R");
-    for(int i = 0; i < rel->size; i++){
+    for(int i = 0; i < rel.size; i++){
         printf(" ");
-        printPair(universe, rel[i].pairs);
+        printPair(universe, rel.pairs[i]);
     }
     printf("\n");
 }
 
-void printSubject(Universe *universe, Subject *subject){
-    switch(subject->subjectType){
+void printSubject(Universe universe, Subject subject){
+    switch(subject.subjectType){
         case SetType:
-            printSet(universe, subject->set_p);
+            printSet(universe, *subject.set_p);
             break;
         case RelationType:
-            printRelation(universe, subject->relation_p);
+            printRelation(universe, *subject.relation_p);
             break;
         case UniverseType:
             printUniverse(universe);

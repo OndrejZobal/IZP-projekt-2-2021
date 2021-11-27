@@ -1,12 +1,15 @@
+#ifndef setcal
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include "./utility.h"
+#include "./structs.h"
+#endif
 
 #define GROWSTR_DEFAULT_SIZE 10
 #define GROWSTR_SIZE_MULTIPLIER 10
 #define GROWSTR_OK 0
 #define GROWSTR_ERR 1
-
-// Warcrime, home.
 
 typedef struct growSubj {
     // Current length of the string.
@@ -43,11 +46,10 @@ GrowSubj *growSubjCreate() {
  * @return GROWSTR_OK if successfull and GROWSTR_ERR if the Subjectacter could not
  *be added.
  * @param growstr GrowSubj to be added into
- * @param ch Subjectacter that will be added into the growstring
- * @return GROWSTR_ERR on if the appendinw was unsuccessfull, otherwise
+ * @param subj Subjectacter that will be added into the growstring
  *GROWSTR_OK.
  */
-int growSubjAdd(GrowSubj *growstr, Subject ch) {
+void growSubjAdd(GrowSubj *growstr, Subject subj) {
     // Checking if the string is large enough for another Subject to be added to it
     // (accounts for terminator).
     if (growstr->length + 1 > growstr->size) {
@@ -56,17 +58,22 @@ int growSubjAdd(GrowSubj *growstr, Subject ch) {
         // To make the need for reallocation less frewquent the new string size will
         // be multiplied by a constant.
         int newSize = growstr->size * GROWSTR_SIZE_MULTIPLIER;
-        buffer = (Subject *)realloc(growstr->content, newSize * sizeof(Subject));
+        buffer = (Subject *)realloc(growstr->content, newSize * sizeof(Subject *));
         if (buffer == NULL) {
-            return GROWSTR_ERR;
+            memoryCrash();
         }
+
         growstr->content = buffer;
         growstr->size = newSize;
     }
 
     // Adding the new Subject.
-    growstr->content[growstr->length++] = ch;
-    return GROWSTR_OK;
+    growstr->content[growstr->length++] = subj;
+}
+
+void destroyGrowSubj(GrowSubj *growsubj){
+    free(growsubj->content);
+    free(growsubj);
 }
 
 /**
@@ -78,16 +85,17 @@ int growSubjAdd(GrowSubj *growstr, Subject ch) {
 Subject *growSubjConvertToArray(GrowSubj *growstr) {
     Subject *str = malloc(sizeof(Subject) * growstr->length);
     if (str == NULL) {
-        printf("SUSUS hella susu");
-        exit(1);
+        memoryCrash();
     }
+
     for (int i = 0; i < growstr->length; i++) {
         str[i] = growstr->content[i];
     }
-    free(growstr->content);
-    free(growstr);
+
+    destroyGrowSubj(growstr);
     return str;
 }
+
 //
 //// Test function do not call
 //int main() {
