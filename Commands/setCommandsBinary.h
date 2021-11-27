@@ -50,6 +50,9 @@ Set *minus(Set *s1, Set *s2){
 
 // returns true if s1 is a subset of s2 (they can be equal)
 int subseteq(Set *s1, Set *s2){
+    if(s1->size == 0){
+        return 1;
+    }
     for (int i = 0; i < s1->size; ++i) {
         if(!isInSet(s1->content[i], s2)){
             return 0;
