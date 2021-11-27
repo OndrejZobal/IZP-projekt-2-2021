@@ -95,6 +95,20 @@ Set createSet(int id, int size, int *content){
     return set;
 }
 
+// makes a set full of '-1'
+Set *constructEmptySet(int size){
+    int *list = malloc(size * sizeof(int));
+    for(int i = 0; i < size; i++){
+        list[i] = -1;
+    }
+    Set *set;
+    set = malloc(sizeof(Set));
+    set->id= 0;
+    set->size = size;
+    set->content = list;
+    return set;
+}
+
 void destroySet(Set *set){
     free(set->content);
     free(set);

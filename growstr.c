@@ -1,5 +1,7 @@
+#ifndef setcal
 #include <stdio.h>
 #include <stdlib.h>
+#endif
 
 #define GROWSTR_DEFAULT_SIZE 10
 #define GROWSTR_SIZE_MULTIPLIER 10

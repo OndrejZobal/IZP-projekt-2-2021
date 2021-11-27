@@ -3,13 +3,13 @@
 //
 
 #ifndef setcal
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "../structs.h"
 #include "isInSet.h"
 #include "areSetsEqual.h"
 #include "constructEmptySet.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #endif
 
 

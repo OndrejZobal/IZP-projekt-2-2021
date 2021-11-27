@@ -7,6 +7,7 @@
 
 #define setcal 1
 #define tests 1
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -14,7 +15,10 @@
 #include "./growstr.c"
 #include "./growsubj.c"
 #include "./utility.h"
-//#include "set_functins/intersect.c"
+#include "Commands/setCommandsUnary.h"
+#include "Commands/isInSet.h"
+#include "Commands/setCommandsBinary.h"
+#include "Commands/areSetsEqual.h"
 
 // TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
 
@@ -96,8 +100,8 @@ Universe* universeCreate(int id, int size, char* contentString)
 
 Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe)
 {
-    Relation* relation;
-    Set* set;
+    Relation* relation = NULL;
+    Set* set = NULL;
 
     if (type == RelationType)
     {
@@ -161,9 +165,7 @@ void parseFile(char* filePath)
     char* string;
 
     SubjectType type;
-    //subjv = malloc(sizeof(Subject) * 1000); // Before we have generic grow type...
-                                            // For every line:
-                                            //  Read line char by char and store it in growstr.
+
     GrowStr* gstr;
     GrowSubj* gsubj = growSubjCreate();
 
@@ -216,6 +218,7 @@ void parseFile(char* filePath)
     {
         ioCrash(filePath);
     }
+
 }
 
 /**
