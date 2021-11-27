@@ -39,10 +39,10 @@ typedef struct
     int y;
 } Pair;
 
-Pair *createPair(int x, int y){
-    Pair *pair = malloc(sizeof(Pair));
-    pair->x = x;
-    pair->y = y;
+Pair createPair(int x, int y){
+    Pair pair;
+    pair.x = x;
+    pair.y = y;
     return pair;
 }
 
