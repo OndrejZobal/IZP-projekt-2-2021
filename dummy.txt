@@ -1,5 +1,14 @@
 U a b c x y z
 S a b c x
 S x y z
+S
+C empty 2
+C card 3
+C complement 3
+C union 2 3
 C intersect 2 3
 C minus 2 3
+C subseteq 2 3
+C subseteq 3 8
+C subset 3 3
+C equals 3 3

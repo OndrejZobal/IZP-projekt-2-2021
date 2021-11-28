@@ -30,7 +30,8 @@ typedef enum
 {
     SetType,
     RelationType,
-    UniverseType
+    UniverseType,
+    CommandType,
 } SubjectType;
 
 typedef struct
@@ -151,6 +152,26 @@ typedef struct
     SubjectType subjectType;
 
 } Subject;
+
+Subject createSubjectFromSet(Set set){
+    // Copy the set to heap.
+    Set* set_p = malloc(sizeof(Set));
+    *set_p = set;
+
+    Subject subj = { .id = set.id, .set_p = set_p, .subjectType = SetType};
+    return subj;
+}
+
+Subject createSubjectFromSetPtr(Set *set){
+    // Copy the set to heap.
+    Subject subj = { .id = set->id, .set_p = set, .subjectType = SetType};
+    return subj;
+}
+
+Subject createEmptySubject(int id){
+    Subject subj = { .id = id, .subjectType = CommandType};
+    return subj;
+}
 
 void destroySubject(Subject *subject){
     switch(subject->subjectType){
