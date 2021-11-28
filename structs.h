@@ -30,7 +30,8 @@ typedef enum
 {
     SetType,
     RelationType,
-    UniverseType
+    UniverseType,
+    CommandType,
 } SubjectType;
 
 typedef struct
@@ -95,6 +96,20 @@ Set createSet(int id, int size, int *content){
     return set;
 }
 
+// makes a set full of '-1'
+Set *constructEmptySet(int size){
+    int *list = malloc(size * sizeof(int));
+    for(int i = 0; i < size; i++){
+        list[i] = -1;
+    }
+    Set *set;
+    set = malloc(sizeof(Set));
+    set->id= 0;
+    set->size = size;
+    set->content = list;
+    return set;
+}
+
 void destroySet(Set *set){
     free(set->content);
     free(set);
@@ -137,6 +152,26 @@ typedef struct
     SubjectType subjectType;
 
 } Subject;
+
+Subject createSubjectFromSet(Set set){
+    // Copy the set to heap.
+    Set* set_p = malloc(sizeof(Set));
+    *set_p = set;
+
+    Subject subj = { .id = set.id, .set_p = set_p, .subjectType = SetType};
+    return subj;
+}
+
+Subject createSubjectFromSetPtr(Set *set){
+    // Copy the set to heap.
+    Subject subj = { .id = set->id, .set_p = set, .subjectType = SetType};
+    return subj;
+}
+
+Subject createEmptySubject(int id){
+    Subject subj = { .id = id, .subjectType = CommandType};
+    return subj;
+}
 
 void destroySubject(Subject *subject){
     switch(subject->subjectType){

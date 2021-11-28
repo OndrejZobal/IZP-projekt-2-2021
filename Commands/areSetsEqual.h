@@ -2,10 +2,10 @@
 // Created by vladimir on 11/26/21.
 //
 
-#ifndef IZP_PROJEKT_2_2021_ARESETSEQUAL_H
-#define IZP_PROJEKT_2_2021_ARESETSEQUAL_H
-
-#endif //IZP_PROJEKT_2_2021_ARESETSEQUAL_H
+#ifndef setcal
+#include "../structs.h"
+#include "isInSet.h"
+#endif
 
 // returns 1 if sets are equal
 int areSetsEqual(Set *s1, Set *s2){
