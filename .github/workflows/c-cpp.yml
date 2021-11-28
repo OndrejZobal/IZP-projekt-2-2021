@@ -1,16 +1,16 @@
-name: C/C++ CI
+   name: compile-test
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+   on:
+     push:
+       branches: [ master ]
+     pull_request:
+       branches: [ master ]
 
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: make
-      run: make build
+   jobs:
+    build:
+      runs-on: ubuntu-latest
+      steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+      - name: build application
+        run: make build
