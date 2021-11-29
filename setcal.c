@@ -99,55 +99,88 @@ Universe* universeCreate(int id, int size, char* contentString)
     return universe;
 }
 
-int parseInt(char* str){
+int parseInt(char* str, bool* err){
+    for(int i = 0; str[i] != '\0'; ++i){
+        if(str[i] > '9' || str[i] < '0'){
+            *err = true;
+            return 0;
+        }
+    }
+    err = false;
     return atoi(str);
 }
 
-Subject processCommand(int id, int size, char* contentString, Set* setResutl, Relation* relResult, GrowSubj* gsubj) {
+Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects){
+
+}
+
+Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects){
+    if (!strcmp(cmdWord, CMD_EMPTY)){
+        printBool(isEmpty(subjects[arg1].set_p));
+        return createEmptySubject(id);
+    }
+    if (!strcmp(cmdWord, CMD_CARD)){
+        return createEmptySubject(id);
+    }
+    if (!strcmp(cmdWord, CMD_COMPLEMENT)){
+        return createSubjectFromSetPtr(getComplement(subjects[arg1].set_p, subjects[0].universe_p->size));
+    }
+
+    // Processing commands with two inputs
+    if (arg2 == -1){
+        argCrash(id);
+    }
+
+    if (!strcmp(cmdWord, CMD_UNION)){
+         return createSubjectFromSetPtr(setUnion(subjects[arg1].set_p, subjects[arg2].set_p));
+    }
+    if (!strcmp(cmdWord, CMD_INTERSECT)){
+         return createSubjectFromSetPtr(intersect(subjects[arg1].set_p, subjects[arg2].set_p));
+    }
+    if (!strcmp(cmdWord, CMD_MINUS)){
+         return createSubjectFromSetPtr(minus(subjects[arg1].set_p, subjects[arg2].set_p));
+    }
+    if (!strcmp(cmdWord, CMD_SUBSETEQ)){
+        printBool(subseteq(subjects[arg1].set_p, subjects[arg2].set_p));
+        return createEmptySubject(id);
+    }
+    if (!strcmp(cmdWord, CMD_SUBSET)){
+        printBool(subset(subjects[arg1].set_p, subjects[arg2].set_p));
+        return createEmptySubject(id);
+    }
+    if (!strcmp(cmdWord, CMD_EQUALS)){
+        printBool(areSetsEqual(subjects[arg1].set_p, subjects[arg2].set_p));
+        return createEmptySubject(id);
+    }
+}
+
+Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
     if (size < 2){
         argCrash(id);
     }
+
     char* content[size];
     Subject* subjects = gsubj->content;
     splitStringintoArray(contentString, content);
-
-    if (!strcmp(content[0], CMD_EMPTY)){
-        printBool(isEmpty(subjects[parseInt(content[1])-1].set_p));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(content[0], CMD_CARD)){
-        printf("%d\n", card(subjects[parseInt(content[1])-1].set_p));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(content[0], CMD_COMPLEMENT)){
-        return createSubjectFromSetPtr(getComplement(subjects[parseInt(content[1])-1].set_p, gsubj->content[0].universe_p->size));
+    char* cmdWord = content[0];
+    bool conversionErr = false;
+    int arg1 = parseInt(content[1], &conversionErr)-1;
+    if (conversionErr){
+        nanCrash(id, content[1]);
     }
 
-    if (size < 3){
-        argCrash(id);
+    int arg2 = -1;
+    if (size == 3){
+        arg2 = parseInt(content[2], &conversionErr)-1;
+        if (conversionErr){
+            nanCrash(id, content[2]);
+        }
     }
 
-    if (!strcmp(content[0], CMD_UNION)){
-         return createSubjectFromSetPtr(setUnion(subjects[parseInt(content[1])-1].set_p, subjects[parseInt(content[2])-1].set_p));
+    if(gsubj->content[arg1].subjectType == SetType){
+        return processSetCommand(id, cmdWord, arg1, arg2, subjects);
     }
-    if (!strcmp(content[0], CMD_INTERSECT)){
-         return createSubjectFromSetPtr(intersect(subjects[parseInt(content[1])-1].set_p, subjects[parseInt(content[2])-1].set_p));
-    }
-    if (!strcmp(content[0], CMD_MINUS)){
-         return createSubjectFromSetPtr(minus(subjects[parseInt(content[1])-1].set_p, subjects[parseInt(content[2])-1].set_p));
-    }
-    if (!strcmp(content[0], CMD_SUBSETEQ)){
-        printBool(subseteq(subjects[parseInt(content[1])-1].set_p, subjects[parseInt(content[2])-1].set_p));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(content[0], CMD_SUBSET)){
-        printBool(subset(subjects[parseInt(content[1])-1].set_p, subjects[parseInt(content[2])-1].set_p));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(content[0], CMD_EQUALS)){
-        printBool(areSetsEqual(subjects[parseInt(content[1])-1].set_p, subjects[parseInt(content[2])-1].set_p));
-        return createEmptySubject(id);
-    }
+    return processRelationCommand(id, cmdWord, arg1, arg2, subjects);
 }
 
 Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe, GrowSubj* gsubj)
@@ -170,8 +203,8 @@ Subject parseLine(int id, int size, char* contentString, SubjectType type, Unive
             free(newUniverse);
             break;
         case CommandType:
-            subj = processCommand(id, size, contentString, set, relation, gsubj);
-                return subj;
+            subj = processCommand(id, size, contentString, gsubj);
+            return subj;
     }
 
     Subject subject = {.id = id, .relation_p = relation, .set_p = set, .universe_p = universe, .subjectType = type};

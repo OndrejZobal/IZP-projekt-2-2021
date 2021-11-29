@@ -4,7 +4,7 @@
 #endif
 
 void memoryCrash(){
-    fprintf(stderr, "Failed to allocate memory on the machine. The program cannot continue!");
+    fprintf(stderr, "Failed to allocate memory on the machine. The program cannot continue!\n");
     exit(1);
 }
 
@@ -18,12 +18,17 @@ void ioCrash(char *path){
 }
 
 void syntaxCrash(){
-    fprintf(stderr, "Invalid syntax in instruction file. The program cannot continue!");
+    fprintf(stderr, "Invalid syntax in instruction file. The program cannot continue!\n");
     exit(1);
 }
 
 void argCrash(int line){
-    fprintf(stderr, "Command missing arguments on line %d", line + 1);
+    fprintf(stderr, "Incomplete command on line %d\n", line + 1);
+    syntaxCrash();
+}
+
+void nanCrash(int line, char* nan){
+    fprintf(stderr, "On line %d there was supposted to be a line number, instead got \"%s\"!\n", line, nan);
     syntaxCrash();
 }
 
