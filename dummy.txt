@@ -7,7 +7,7 @@ C card 3
 C complement 3
 C union 2 3
 C intersect 2 3
-C minus 2 3
+C minus 1 2
 C subseteq 2 3
 C subseteq 3 8
 C subset 3 3

@@ -127,7 +127,7 @@ Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* s
     }
 
     // Processing commands with two inputs
-    if (arg2 == -1){
+    if (arg2 == -1 || (subjects[arg2].subjectType != SetType && subjects[arg2].subjectType != UniverseType)){
         argCrash(id);
     }
 
@@ -177,7 +177,7 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
         }
     }
 
-    if(gsubj->content[arg1].subjectType == SetType){
+    if(gsubj->content[arg1].subjectType == SetType || gsubj->content[arg1].subjectType == UniverseType){
         return processSetCommand(id, cmdWord, arg1, arg2, subjects);
     }
     return processRelationCommand(id, cmdWord, arg1, arg2, subjects);
@@ -199,6 +199,7 @@ Subject parseLine(int id, int size, char* contentString, SubjectType type, Unive
         case UniverseType:
             newUniverse = universeCreate(id, size, contentString);
             *universe = *newUniverse;
+            set = setCreate(id, size, contentString, universe);
             // Only free the universe and keep the content.
             free(newUniverse);
             break;
