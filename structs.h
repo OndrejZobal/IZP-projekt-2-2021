@@ -62,7 +62,7 @@ typedef struct
     Pair *pairs;
 } Relation;
 
-Relation *CreateRelation(int id, int size, Pair *content){
+Relation *createRelation(int id, int size, Pair *content){
     if (content == NULL && size != 0){
         content = malloc(sizeof(Pair) * size);
     }
