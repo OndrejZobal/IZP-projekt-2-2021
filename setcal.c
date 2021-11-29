@@ -21,25 +21,84 @@
 #include "Commands/areSetsEqual.h"
 #include "Commands/commandWords.h"
 
-// TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
+ // TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
 
-/**
- * Functions fills given array with string split by a space delimiter
- * @param string string to split by a delimiter.
- * @param array array to fill the split string with.
-*/
-void splitStringintoArray(char* string, char** array)
+ /**
+  * Functions fills given array with string split by a space delimiter
+  * @param string string to split by a delimiter.
+  * @param array array to fill the split string with.
+ */
+void splitStringintoArray(char* string, char** array, char* delimiter)
 {
     int i = 0;
     char* tempstr = calloc(strlen(string) + 1, sizeof(char));
     strcpy(tempstr, string);
-    char* strtoken = strtok(tempstr, " ");
+    char* strtoken = strtok(tempstr, delimiter);
     while (strtoken != NULL)
     {
         array[i++] = strtoken;
 
-        strtoken = strtok(NULL, " ");
+        strtoken = strtok(NULL, delimiter);
     }
+}
+
+void removeChar(char* str, char charToRemove) {
+    int i, j;
+    int len = strlen(str);
+    for (i = 0; i < len; i++)
+    {
+        if ((str[i] == charToRemove))
+        {
+            for (j = i; j < len; j++)
+            {
+                str[j] = str[j + 1];
+            }
+            len--;
+            i--;
+        }
+    }
+    //printf("string after remove: %s\n", str);
+}
+
+void removeFirstChar(char* str) {
+    str++;
+    //printf("string after remove first char: %s\n", str);
+
+}
+
+void splitStringIntoPairs(char* string, char** array) {
+    removeFirstChar(string);
+    removeChar(string, '(');
+    splitStringintoArray(string, array, ")");
+}
+
+
+
+Relation* relationCreate(int id, int size, char* contentString, Universe* universe) {
+    char** content = malloc(sizeof(char*) * size);
+    Pair* pairs = malloc(sizeof(Pair) * size);
+    splitStringIntoPairs(contentString, content);
+
+    for (int i = 0; i < size; i++) {
+        char** helpArray = malloc(sizeof(char*) * 2);
+        splitStringintoArray(content[i], helpArray, " ");
+        int x = getItemIndex(universe, helpArray[0]);
+        int y = getItemIndex(universe, helpArray[1]);
+        if (x == -1 || y == -1) {
+            fprintf(stderr, "Attempted to create a set with an element outside of the universe: %s or %s\n", helpArray[0], helpArray[1]);
+            exit(1);
+        }
+        Pair pair = createPair(x, y);
+        //printf("pair x: %d pair y: %d\n", pair.x, pair.y);
+        pairs[i] = pair;
+    }
+
+    Relation* relation = malloc(sizeof(Relation));
+    relation->id = id;
+    relation->size = size;
+    relation->pairs = pairs;
+
+    return relation;
 }
 
 //  TODO create relationCreate
@@ -53,9 +112,9 @@ void splitStringintoArray(char* string, char** array)
 Set* setCreate(int id, int size, char* contentString, Universe* universe)
 {
     // TODO Need to check for duplicates in the set.
-    int *intContent = malloc(sizeof(int) * size);
+    int* intContent = malloc(sizeof(int) * size);
     char** content = malloc(sizeof(char*) * size);
-    splitStringintoArray(contentString, content);
+    splitStringintoArray(contentString, content, " ");
     for (int i = 0; i < universe->size; i++) {
     }
     for (int i = 0; i < size; i++) {
@@ -86,7 +145,7 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
 Universe* universeCreate(int id, int size, char* contentString)
 {
     char** content = malloc(sizeof(char*) * size);
-    splitStringintoArray(contentString, content);
+    splitStringintoArray(contentString, content, " ");
 
     Universe* universe = malloc(sizeof(Universe));
 
@@ -101,9 +160,9 @@ Universe* universeCreate(int id, int size, char* contentString)
     return universe;
 }
 
-int parseInt(char* str, bool* err){
-    for(int i = 0; str[i] != '\0'; ++i){
-        if(str[i] > '9' || str[i] < '0'){
+int parseInt(char* str, bool* err) {
+    for (int i = 0; str[i] != '\0'; ++i) {
+        if (str[i] > '9' || str[i] < '0') {
             *err = true;
             return 0;
         }
@@ -112,74 +171,74 @@ int parseInt(char* str, bool* err){
     return atoi(str);
 }
 
-Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects){
+Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects) {
 
 }
 
-Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects){
-    if (!strcmp(cmdWord, CMD_EMPTY)){
+Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects) {
+    if (!strcmp(cmdWord, CMD_EMPTY)) {
         printBool(isEmpty(subjects[arg1].set_p));
         return createEmptySubject(id);
     }
-    if (!strcmp(cmdWord, CMD_CARD)){
+    if (!strcmp(cmdWord, CMD_CARD)) {
         return createEmptySubject(id);
     }
-    if (!strcmp(cmdWord, CMD_COMPLEMENT)){
+    if (!strcmp(cmdWord, CMD_COMPLEMENT)) {
         return createSubjectFromSetPtr(getComplement(subjects[arg1].set_p, subjects[0].universe_p->size));
     }
 
     // Processing commands with two inputs
-    if (arg2 == -1 || (subjects[arg2].subjectType != SetType && subjects[arg2].subjectType != UniverseType)){
+    if (arg2 == -1 || (subjects[arg2].subjectType != SetType && subjects[arg2].subjectType != UniverseType)) {
         argCrash(id);
     }
 
-    if (!strcmp(cmdWord, CMD_UNION)){
-         return createSubjectFromSetPtr(setUnion(subjects[arg1].set_p, subjects[arg2].set_p));
+    if (!strcmp(cmdWord, CMD_UNION)) {
+        return createSubjectFromSetPtr(setUnion(subjects[arg1].set_p, subjects[arg2].set_p));
     }
-    if (!strcmp(cmdWord, CMD_INTERSECT)){
-         return createSubjectFromSetPtr(intersect(subjects[arg1].set_p, subjects[arg2].set_p));
+    if (!strcmp(cmdWord, CMD_INTERSECT)) {
+        return createSubjectFromSetPtr(intersect(subjects[arg1].set_p, subjects[arg2].set_p));
     }
-    if (!strcmp(cmdWord, CMD_MINUS)){
-         return createSubjectFromSetPtr(minus(subjects[arg1].set_p, subjects[arg2].set_p));
+    if (!strcmp(cmdWord, CMD_MINUS)) {
+        return createSubjectFromSetPtr(minus(subjects[arg1].set_p, subjects[arg2].set_p));
     }
-    if (!strcmp(cmdWord, CMD_SUBSETEQ)){
+    if (!strcmp(cmdWord, CMD_SUBSETEQ)) {
         printBool(subseteq(subjects[arg1].set_p, subjects[arg2].set_p));
         return createEmptySubject(id);
     }
-    if (!strcmp(cmdWord, CMD_SUBSET)){
+    if (!strcmp(cmdWord, CMD_SUBSET)) {
         printBool(subset(subjects[arg1].set_p, subjects[arg2].set_p));
         return createEmptySubject(id);
     }
-    if (!strcmp(cmdWord, CMD_EQUALS)){
+    if (!strcmp(cmdWord, CMD_EQUALS)) {
         printBool(areSetsEqual(subjects[arg1].set_p, subjects[arg2].set_p));
         return createEmptySubject(id);
     }
 }
 
 Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
-    if (size < 2){
+    if (size < 2) {
         argCrash(id);
     }
 
     char* content[size];
     Subject* subjects = gsubj->content;
-    splitStringintoArray(contentString, content);
+    splitStringintoArray(contentString, content, " ");
     char* cmdWord = content[0];
     bool conversionErr = false;
-    int arg1 = parseInt(content[1], &conversionErr)-1;
-    if (conversionErr){
+    int arg1 = parseInt(content[1], &conversionErr) - 1;
+    if (conversionErr) {
         nanCrash(id, content[1]);
     }
 
     int arg2 = -1;
-    if (size == 3){
-        arg2 = parseInt(content[2], &conversionErr)-1;
-        if (conversionErr){
+    if (size == 3) {
+        arg2 = parseInt(content[2], &conversionErr) - 1;
+        if (conversionErr) {
             nanCrash(id, content[2]);
         }
     }
 
-    if(gsubj->content[arg1].subjectType == SetType || gsubj->content[arg1].subjectType == UniverseType){
+    if (gsubj->content[arg1].subjectType == SetType || gsubj->content[arg1].subjectType == UniverseType) {
         return processSetCommand(id, cmdWord, arg1, arg2, subjects);
     }
     return processRelationCommand(id, cmdWord, arg1, arg2, subjects);
@@ -192,43 +251,44 @@ Subject parseLine(int id, int size, char* contentString, SubjectType type, Unive
     Universe* newUniverse = NULL;
     Subject subj;
 
-    switch(type){
-        case RelationType:
-            break;
-        case SetType:
-            set = setCreate(id, size, contentString, universe);
-            break;
-        case UniverseType:
-            newUniverse = universeCreate(id, size, contentString);
-            *universe = *newUniverse;
-            set = setCreate(id, size, contentString, universe);
-            // Only free the universe and keep the content.
-            free(newUniverse);
-            break;
-        case CommandType:
-            subj = processCommand(id, size, contentString, gsubj);
-            return subj;
+    switch (type) {
+    case RelationType:
+        relation = relationCreate(id, size / 2, contentString, universe);
+        break;
+    case SetType:
+        set = setCreate(id, size, contentString, universe);
+        break;
+    case UniverseType:
+        newUniverse = universeCreate(id, size, contentString);
+        *universe = *newUniverse;
+        set = setCreate(id, size, contentString, universe);
+        // Only free the universe and keep the content.
+        free(newUniverse);
+        break;
+    case CommandType:
+        subj = processCommand(id, size, contentString, gsubj);
+        return subj;
     }
 
-    Subject subject = {.id = id, .relation_p = relation, .set_p = set, .universe_p = universe, .subjectType = type};
+    Subject subject = { .id = id, .relation_p = relation, .set_p = set, .universe_p = universe, .subjectType = type };
 
     return subject;
 }
 
 SubjectType setType(char character)
 {
-    switch (character){
-        case 'S':
-            return SetType;
-        case 'R':
-            return RelationType;
-        case 'U':
-            return UniverseType;
-        case 'C':
-            return CommandType;
-        default:
-            fprintf(stderr, "\"%c\" is not a valid identifier!\n", character);
-            syntaxCrash();
+    switch (character) {
+    case 'S':
+        return SetType;
+    case 'R':
+        return RelationType;
+    case 'U':
+        return UniverseType;
+    case 'C':
+        return CommandType;
+    default:
+        fprintf(stderr, "\"%c\" is not a valid identifier!\n", character);
+        syntaxCrash();
     }
 }
 
@@ -277,7 +337,7 @@ void parseFile(char* filePath)
         {
             string = growStrConvertToStr(gstr);
             growSubjAdd(gsubj, parseLine(id, count, string, type, universe, gsubj));
-            printSubject(*universe, gsubj->content[gsubj->length-1]);
+            printSubject(*universe, gsubj->content[gsubj->length - 1]);
 
             count = 0;
             id++;
