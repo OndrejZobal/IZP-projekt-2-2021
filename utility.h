@@ -11,6 +11,7 @@ void memoryCrash(){
 void ioCrash(char *path){
     if (path == NULL){
         fprintf(stderr, "Failed to manipulate with file!\n");
+        exit(1);
     }
 
     fprintf(stderr, "Failed to manipulate with file: \"%s\"!\n", path);

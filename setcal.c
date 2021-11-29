@@ -42,6 +42,7 @@ void splitStringintoArray(char* string, char** array)
     }
 }
 
+//  TODO create relationCreate
 
 /**
  * Function creates a set object with specified params
@@ -51,6 +52,7 @@ void splitStringintoArray(char* string, char** array)
 */
 Set* setCreate(int id, int size, char* contentString, Universe* universe)
 {
+    // TODO Need to check for duplicates in the set.
     int *intContent = malloc(sizeof(int) * size);
     char** content = malloc(sizeof(char*) * size);
     splitStringintoArray(contentString, content);
