@@ -31,11 +31,28 @@ Relation* constructEmptyRelation(int size){
 }
 
 // reallocs the relation so that it doesnt contain any empty pairs // TODO utility
-Relation* reallocToFit(Relation* relation, int newSize){
-    Relation* newRelation = realloc(relation, newSize * sizeof(Pair));
-    if(newRelation != NULL){
-        newRelation->size = newSize;
-        return newRelation;
+void reallocRelationToFit(Relation* relation, int newSize){
+    Pair* newPairs;
+    newPairs = realloc(relation->pairs, newSize*sizeof(Pair));
+    if(newPairs != NULL){
+        relation->size = newSize;
+        relation->pairs = newPairs;
+    }
+    else{
+        memoryCrash();
+    }
+}
+
+// reallocs the set so that it doesnt contain any empty pairs // TODO utility, it belongs to a completely different file
+void reallocSetToFit(Set* set, int newSize){
+    int* newContent;
+    newContent = realloc(set->content, newSize * sizeof(int));
+    if(newContent != NULL){
+        set->size = newSize;
+        set->content = newContent;
+    }
+    else{
+        memoryCrash();
     }
 }
 
@@ -146,23 +163,29 @@ int isFunction(Relation *relation){
 
 // returns domain set of relation (x values)
 Set* domain(Relation *relation){
+    int domainCurrentLength = 0;
     Set *domainSet = constructEmptySet(relation->size);
     for (int i = 0; i < relation->size; ++i) {
         if(!isInSet(relation->pairs[i].x, domainSet)){
-            domainSet->content[i] = relation->pairs[i].x;
+            domainSet->content[domainCurrentLength] = relation->pairs[i].x;
+            domainCurrentLength++;
         }
     }
+    reallocSetToFit(domainSet, domainCurrentLength);
     return domainSet;
 }
 
 // returns codomain set of relation (y values)
 Set* codomain(Relation *relation){
+    int codomainCurrentLength = 0;
     Set *codomainSet = constructEmptySet(relation->size);
     for (int i = 0; i < relation->size; ++i) {
         if(!isInSet(relation->pairs[i].y, codomainSet)){
-            codomainSet->content[i] = relation->pairs[i].y;
+            codomainSet->content[codomainCurrentLength] = relation->pairs[i].y;
+            codomainCurrentLength++;
         }
     }
+    reallocSetToFit(codomainSet, codomainCurrentLength);
     return codomainSet;
 }
 
@@ -187,7 +210,7 @@ Relation* reflexiveClosure(Relation* relation, int universeSize){
             refRelCurrentLength++;
         }
     }
-    reflexiveClosureRelation = reallocToFit(reflexiveClosureRelation, refRelCurrentLength);
+    reallocRelationToFit(reflexiveClosureRelation, refRelCurrentLength);
     return reflexiveClosureRelation;
 }
 
@@ -210,7 +233,7 @@ Relation* symmetricClosure(Relation* relation){
             symRelCurrentLength++;
         }
     }
-    symmetricClosureRelation = reallocToFit(symmetricClosureRelation, symRelCurrentLength);
+    reallocRelationToFit(symmetricClosureRelation, symRelCurrentLength);
     return symmetricClosureRelation;
 }
 
@@ -242,26 +265,35 @@ Relation* transitiveClosure(Relation* relation){
             }
         }
     }
-    transClosureRelation = reallocToFit(transClosureRelation, transRelCurrentLength);
+    reallocRelationToFit(transClosureRelation, transRelCurrentLength);
     return transClosureRelation;
 }
 
-// TODO bijective/surjective/injective
+// TODO bijective/surjective/injective need more testing
 
-// TODO doesnt work yet
+// returns true if relation R is an injective function on sets s1 and s2
 bool isInjective(Relation* relation, Set* s1, Set* s2) {
-    Set* domainSet = domain(relation);
-    if (!areSetsEqual(domainSet, s1)) {
+    if(s1->size > s2->size){
         return false;
     }
-    free(domainSet);
-
+    if(!isFunction(relation)){
+        return false;
+    }
+    Set* domainSet = domain(relation);
+    if (!areSetsEqual(domainSet, s1)) {
+        destroySet(domainSet);
+        return false;
+    }
+    destroySet(domainSet);
     for (int i = 0; i < relation->size; ++i) {
-        if (!isInSet(relation->pairs[i].y,s2)) {
+        if (!isInSet(relation->pairs[i].y, s2)) {
             return false;
         }
-        for (int j = i; j < relation->size; ++j) {
+        for (int j = i+1; j < relation->size; ++j) {
             if (relation->pairs[i].x == relation->pairs[j].x) {
+                return false;
+            }
+            if(relation->pairs[i].y == relation->pairs[j].y){
                 return false;
             }
         }
@@ -269,21 +301,32 @@ bool isInjective(Relation* relation, Set* s1, Set* s2) {
     return true;
 }
 
+// returns true if relation R is a surjective function on sets s1 and s2
+bool isSurjective(Relation* relation, Set* s1, Set* s2){
+    if(!isFunction(relation)){
+        return false;
+    }
+    Set *codomainSet = codomain(relation);
+    if(!areSetsEqual(codomainSet, s2)){
+        destroySet(codomainSet);
+        return false;
+    }
+    destroySet(codomainSet);
+    for (int i = 0; i < relation->size; ++i) {
+        if(!isInSet(relation->pairs[i].x, s1)){
+            return false;
+        }
+    }
+    return true;
+}
 
-//bool isSurjective(Relation* relation, Set* s1, Set* s2){
-//    for (int i = 0; i < relation->size; ++i) {
-//        if(!isInSet(relation->pairs[i].x, s1)){
-//            return false;
-//        }
-//        if(!isInSet(relation->pairs[i].y, s2)){
-//            return false;
-//        }
-//    }
-//    for (int i = 0; i < s2->size; ++i) {
-//        for (int j = 0; j < relation->size; ++j) {
-//            if(relation->pairs[j].y == s2->content[j].y){
-//                break;
-//            }
-//        }
-//    }
-//}
+// returns true if relation R is a bijective function on sets s1 and s2
+bool isBijective(Relation* relation, Set* s1, Set* s2){
+    if(!isFunction(relation)){
+        return false;
+    }
+    if(isSurjective(relation, s1, s2) && isInjective(relation, s1, s2)){
+        return true;
+    }
+    return false;
+}
