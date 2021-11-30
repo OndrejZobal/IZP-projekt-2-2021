@@ -9,18 +9,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-<<<<<<< HEAD
-#include "isInSet.h"
-#endif
-=======
 #include <stdbool.h>
 #include "isInSet.h"
 #include "../utility.h"
-#endif
 #include "isInSet.h"
 #include "stdbool.h"
 #include "areSetsEqual.h"
->>>>>>> e20982630540f128978634d44d08d8c8c0c852e7
+#endif
 
 // constructs relation full of empty pairs ('-1') // TODO utility
 Relation* constructEmptyRelation(int size){
