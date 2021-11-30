@@ -14,6 +14,8 @@
 #include "../utility.h"
 #endif
 #include "isInSet.h"
+#include "stdbool.h"
+#include "areSetsEqual.h"
 
 // constructs relation full of empty pairs ('-1') // TODO utility
 Relation* constructEmptyRelation(int size){
@@ -143,11 +145,8 @@ int isFunction(Relation *relation){
 }
 
 // returns domain set of relation (x values)
-Set *domain(Relation *relation){
+Set* domain(Relation *relation){
     Set *domainSet = constructEmptySet(relation->size);
-    if(!isFunction(relation)){
-        return NULL;
-    }
     for (int i = 0; i < relation->size; ++i) {
         if(!isInSet(relation->pairs[i].x, domainSet)){
             domainSet->content[i] = relation->pairs[i].x;
@@ -157,11 +156,8 @@ Set *domain(Relation *relation){
 }
 
 // returns codomain set of relation (y values)
-Set *codomain(Relation *relation){
+Set* codomain(Relation *relation){
     Set *codomainSet = constructEmptySet(relation->size);
-    if(!isFunction(relation)){
-        return NULL;
-    }
     for (int i = 0; i < relation->size; ++i) {
         if(!isInSet(relation->pairs[i].y, codomainSet)){
             codomainSet->content[i] = relation->pairs[i].y;
@@ -252,3 +248,42 @@ Relation* transitiveClosure(Relation* relation){
 
 // TODO bijective/surjective/injective
 
+// TODO doesnt work yet
+bool isInjective(Relation* relation, Set* s1, Set* s2) {
+    Set* domainSet = domain(relation);
+    if (!areSetsEqual(domainSet, s1)) {
+        return false;
+    }
+    free(domainSet);
+
+    for (int i = 0; i < relation->size; ++i) {
+        if (!isInSet(relation->pairs[i].y,s2)) {
+            return false;
+        }
+        for (int j = i; j < relation->size; ++j) {
+            if (relation->pairs[i].x == relation->pairs[j].x) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+//bool isSurjective(Relation* relation, Set* s1, Set* s2){
+//    for (int i = 0; i < relation->size; ++i) {
+//        if(!isInSet(relation->pairs[i].x, s1)){
+//            return false;
+//        }
+//        if(!isInSet(relation->pairs[i].y, s2)){
+//            return false;
+//        }
+//    }
+//    for (int i = 0; i < s2->size; ++i) {
+//        for (int j = 0; j < relation->size; ++j) {
+//            if(relation->pairs[j].y == s2->content[j].y){
+//                break;
+//            }
+//        }
+//    }
+//}
