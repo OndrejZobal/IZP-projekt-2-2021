@@ -13,3 +13,17 @@ C subseteq 2 3
 C subseteq 3 8
 C subset 3 3
 C equals 3 3
+C reflexive 4
+C symmetric 4
+C antisymmetric 4
+C transitive 4
+C function 4
+C domain 4
+C codomain 4
+C reflexive 4
+C symmetric 4
+C antisymmetric 4
+C transitive 4
+C function 4
+C domain 4
+C codomain 4

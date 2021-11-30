@@ -15,9 +15,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#endif
-#include "constructEmptySet.h"
 #include "isInSet.h"
+#endif
 
 // returns 1 if pair is in relation
 // TODO move this to utility commands later?
@@ -122,7 +121,8 @@ int isFunction(Relation *relation){
 Set *domain(Relation *relation){
     Set *domainSet = constructEmptySet(relation->size);
     if(!isFunction(relation)){
-        return NULL;
+        free(domainSet);
+        return constructEmptySet(0);
     }
     for (int i = 0; i < relation->size; ++i) {
         if(!isInSet(relation->pairs[i].x, domainSet)){
@@ -136,7 +136,8 @@ Set *domain(Relation *relation){
 Set *codomain(Relation *relation){
     Set *codomainSet = constructEmptySet(relation->size);
     if(!isFunction(relation)){
-        return NULL;
+        free(codomainSet);
+        return constructEmptySet(0);
     }
     for (int i = 0; i < relation->size; ++i) {
         if(!isInSet(relation->pairs[i].y, codomainSet)){
