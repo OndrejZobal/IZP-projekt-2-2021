@@ -569,7 +569,7 @@ void parseFile(char* filePath)
             if (type == UniverseType) {
                 wasUniverseSet = true;
             }
-            if (type == setType) {
+            if (type == SetType) {
                 if (!wasUniverseSet) {
                     fprintf(stderr, "non valid argument order!\n");
                     exit(1);
@@ -631,13 +631,12 @@ void parseFile(char* filePath)
         fprintf(stderr, "no command specified!\n");
         exit(1);
     }
-    /*
-    FIXME: somehow does not fokin work
-        if (!wasRelationSet && !wasSetSet) {
-            fprintf(stderr, "no set or relation!\n");
-            exit(1);
-        }
-    */
+
+    if (!wasRelationSet && !wasSetSet) {
+        fprintf(stderr, "no set or relation!\n");
+        exit(1);
+    }
+
     free(gsubj[0].content->set_p);
     destroyUniverse(universe);
     destroyGrowSubj(gsubj);
