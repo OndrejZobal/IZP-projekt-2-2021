@@ -58,7 +58,7 @@ void growSubjAdd(GrowSubj* growstr, Subject subj) {
         // To make the need for reallocation less frewquent the new string size will
         // be multiplied by a constant.
         int newSize = growstr->size * GROWSTR_SIZE_MULTIPLIER;
-        buffer = (Subject*)realloc(growstr->content, newSize * sizeof(Subject*));
+        buffer = realloc(growstr->content, newSize * sizeof(Subject));
         if (buffer == NULL) {
             memoryCrash();
         }

@@ -33,10 +33,10 @@
  * @return void
  */
 
-void splitStringintoArray(char* string, char** array, char* delimiter)
+void splitStringintoArray(char* string, char** array, int size,  char* delimiter)
 {
     int i = 0;
-    char* tempstr = calloc(strlen(string) + 1, sizeof(char));
+    char* tempstr = malloc((strlen(string) + 1) * sizeof(char));
     strcpy(tempstr, string);
     char* strtoken = strtok(tempstr, delimiter);
     while (strtoken != NULL)
@@ -45,6 +45,17 @@ void splitStringintoArray(char* string, char** array, char* delimiter)
 
         strtoken = strtok(NULL, delimiter);
     }
+
+    //char** jesuschrist = malloc(sizeof(char*) * size);
+    for (int j = 0; j < size; j++){
+        int len = strlen(array[j]) + 1;
+        char* godhavemercy = malloc(len * sizeof(char));
+        strcpy(godhavemercy, array[j]);
+        array[j] = godhavemercy;
+    }
+
+
+    free(tempstr);
     free(strtoken);
 }
 
@@ -80,9 +91,9 @@ void removeChar(char* str, char charToRemove) {
  * @return created set with specified values
  */
 
-void splitStringIntoPairs(char* string, char** array) {
+void splitStringIntoPairs(char* string, int size, char** array) {
     removeChar(string, '(');
-    splitStringintoArray(string, array, ")");
+    splitStringintoArray(string, array, size, ")");
 }
 
 /**
@@ -105,7 +116,7 @@ int hasMoreThanMaxSize(char* string) {
 Relation* relationCreate(int id, int size, char* contentString, Universe* universe) {
     char** content = malloc(sizeof(char*) * size);
     Pair* pairs = malloc(sizeof(Pair) * size);
-    splitStringIntoPairs(contentString, content);
+    splitStringIntoPairs(contentString, size, content);
 
     for (int i = 0; i < size; i++) {
         if (hasMoreThanMaxSize(content[i])) {
@@ -116,7 +127,7 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
 
     for (int i = 0; i < size; i++) {
         char** helpArray = malloc(sizeof(char*) * 2);
-        splitStringintoArray(content[i], helpArray, " ");
+        splitStringintoArray(content[i], helpArray, size, " ");
 
 
         int x = getItemIndex(universe, helpArray[0]);
@@ -170,7 +181,7 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     int* intContent = malloc(sizeof(int) * size);
     char** content = malloc(sizeof(char*) * size);
 
-    splitStringintoArray(contentString, content, " ");
+    splitStringintoArray(contentString, content, size, " ");
 
     for (int i = 0; i < size; i++) {
         if (hasMoreThanMaxSize(content[i])) {
@@ -232,7 +243,7 @@ Universe* universeCreate(int id, int size, char* contentString)
 {
     char** content = malloc(sizeof(char*) * size);
 
-    splitStringintoArray(contentString, content, " ");
+    splitStringintoArray(contentString, content, size, " ");
 
     for (int i = 0; i < size; i++) {
         if (hasMoreThanMaxSize(content[i])) {
@@ -392,7 +403,7 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
 
     char* content[size];
     Subject* subjects = gsubj->content;
-    splitStringintoArray(contentString, content, " ");
+    splitStringintoArray(contentString, content, size, " ");
     char* cmdWord = content[0];
     bool conversionErr = false;
     int arg1 = parseInt(content[1], &conversionErr) - 1;
