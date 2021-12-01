@@ -17,17 +17,17 @@ typedef struct growSubj {
     // Size of allocated memroy for the string.
     int size;
     // Subject storing the content.
-    Subject *content;
+    Subject* content;
 } GrowSubj;
 
 /**
  * This function creates a new instance of GrowSubj
  * @return An empty GrowSubj
  */
-GrowSubj *growSubjCreate() {
+GrowSubj* growSubjCreate() {
     // Allocating the string array
-    Subject *content = malloc(sizeof(Subject) * GROWSTR_DEFAULT_SIZE);
-    GrowSubj *gs = malloc(sizeof(GrowSubj));
+    Subject* content = malloc(sizeof(Subject) * GROWSTR_DEFAULT_SIZE);
+    GrowSubj* gs = malloc(sizeof(GrowSubj));
 
     if (content == NULL || gs == NULL) {
         return NULL;
@@ -49,16 +49,16 @@ GrowSubj *growSubjCreate() {
  * @param subj Subjectacter that will be added into the growstring
  *GROWSTR_OK.
  */
-void growSubjAdd(GrowSubj *growstr, Subject subj) {
+void growSubjAdd(GrowSubj* growstr, Subject subj) {
     // Checking if the string is large enough for another Subject to be added to it
     // (accounts for terminator).
     if (growstr->length + 1 > growstr->size) {
         // Reallocating the array.
-        Subject *buffer = NULL;
+        Subject* buffer = NULL;
         // To make the need for reallocation less frewquent the new string size will
         // be multiplied by a constant.
         int newSize = growstr->size * GROWSTR_SIZE_MULTIPLIER;
-        buffer = (Subject *)realloc(growstr->content, newSize * sizeof(Subject *));
+        buffer = (Subject*)realloc(growstr->content, newSize * sizeof(Subject*));
         if (buffer == NULL) {
             memoryCrash();
         }
@@ -71,7 +71,7 @@ void growSubjAdd(GrowSubj *growstr, Subject subj) {
     growstr->content[growstr->length++] = subj;
 }
 
-void destroyGrowSubj(GrowSubj *growsubj){
+void destroyGrowSubj(GrowSubj* growsubj) {
     free(growsubj->content);
     free(growsubj);
 }
@@ -82,8 +82,8 @@ void destroyGrowSubj(GrowSubj *growsubj){
  * @param growstr GrowSubj that will be converted to string
  * @return content of growstr
  */
-Subject *growSubjConvertToArray(GrowSubj *growstr) {
-    Subject *str = malloc(sizeof(Subject) * growstr->length);
+Subject* growSubjConvertToArray(GrowSubj* growstr) {
+    Subject* str = malloc(sizeof(Subject) * growstr->length);
     if (str == NULL) {
         memoryCrash();
     }

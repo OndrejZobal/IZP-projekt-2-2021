@@ -20,6 +20,7 @@
 #include "Commands/setCommandsBinary.h"
 #include "Commands/areSetsEqual.h"
 #include "Commands/commandWords.h"
+#include "Commands/relationCommandsUnary.h"
 
  // TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
 
@@ -47,7 +48,7 @@ void removeChar(char* str, char charToRemove) {
     int len = strlen(str);
     for (i = 0; i < len; i++)
     {
-        if ((str[i] == charToRemove))
+        if (str[i] == charToRemove)
         {
             for (j = i; j < len; j++)
             {
@@ -60,19 +61,10 @@ void removeChar(char* str, char charToRemove) {
     //printf("string after remove: %s\n", str);
 }
 
-void removeFirstChar(char* str) {
-    str++;
-    //printf("string after remove first char: %s\n", str);
-
-}
-
 void splitStringIntoPairs(char* string, char** array) {
-    removeFirstChar(string);
     removeChar(string, '(');
     splitStringintoArray(string, array, ")");
 }
-
-
 
 Relation* relationCreate(int id, int size, char* contentString, Universe* universe) {
     char** content = malloc(sizeof(char*) * size);
@@ -85,9 +77,10 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
         int x = getItemIndex(universe, helpArray[0]);
         int y = getItemIndex(universe, helpArray[1]);
         if (x == -1 || y == -1) {
-            fprintf(stderr, "Attempted to create a set with an element outside of the universe: %s or %s\n", helpArray[0], helpArray[1]);
+            fprintf(stderr, "Attempted to create a relation with an element outside of the universe: (%s %s)\n", helpArray[0], helpArray[1]);
             exit(1);
         }
+        free(helpArray); // FIXME Is this ok?? :flushed: Because I think so -O
         Pair pair = createPair(x, y);
         //printf("pair x: %d pair y: %d\n", pair.x, pair.y);
         pairs[i] = pair;
@@ -101,8 +94,6 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
     return relation;
 }
 
-//  TODO create relationCreate
-
 /**
  * Function creates a set object with specified params
  * @param id id corresponding to the textfile row
@@ -111,9 +102,10 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
 */
 Set* setCreate(int id, int size, char* contentString, Universe* universe)
 {
-    // TODO Need to check for duplicates in the set.
+    // TODO: Need to check for duplicates in the set.
     int* intContent = malloc(sizeof(int) * size);
     char** content = malloc(sizeof(char*) * size);
+
     splitStringintoArray(contentString, content, " ");
     for (int i = 0; i < universe->size; i++) {
     }
@@ -128,6 +120,7 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
 
 
     Set* set = malloc(sizeof(Set));
+
 
     set->id = id;
     set->size = size;
@@ -145,9 +138,11 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
 Universe* universeCreate(int id, int size, char* contentString)
 {
     char** content = malloc(sizeof(char*) * size);
+
     splitStringintoArray(contentString, content, " ");
 
     Universe* universe = malloc(sizeof(Universe));
+
 
     universe->id = id;
     universe->size = size;
@@ -171,8 +166,36 @@ int parseInt(char* str, bool* err) {
     return atoi(str);
 }
 
+// FIXME: pokud chybi parametr, funkce se dojebe
 Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects) {
+    if (!strcmp(cmdWord, CMD_REFLEXIVE)) {
+        printBool(isReflexive(subjects[arg1].relation_p, subjects[0].universe_p->size));
+        return createEmptySubject(id);
+    }
+    if (!strcmp(cmdWord, CMD_SYMMETRIC)) {
+        printBool(isSymmetric(subjects[arg1].relation_p));
+        return createEmptySubject(id);
+    }
+    if (!strcmp(cmdWord, CMD_ANTISYMMETRIC)) {
+        printBool(isAntisymmetric(subjects[arg1].relation_p));
+        return createEmptySubject(id);
+    }
+    if (!strcmp(cmdWord, CMD_TRANSITIVE)) {
+        printBool(isTransitive(subjects[arg1].relation_p));
+        return createEmptySubject(id);
+    }
+    if (!strcmp(cmdWord, CMD_FUNCTION)) {
+        printBool(isFunction(subjects[arg1].relation_p));
+        return createEmptySubject(id);
+    }
 
+    if (!strcmp(cmdWord, CMD_DOMAIN)) {
+        return createSubjectFromSetPtr(domain(subjects[arg1].relation_p));
+    }
+    if (!strcmp(cmdWord, CMD_CODOMAIN)) {
+        return createSubjectFromSetPtr(codomain(subjects[arg1].relation_p));
+    }
+    // TODO
 }
 
 Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects) {
@@ -241,7 +264,9 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
     if (gsubj->content[arg1].subjectType == SetType || gsubj->content[arg1].subjectType == UniverseType) {
         return processSetCommand(id, cmdWord, arg1, arg2, subjects);
     }
-    return processRelationCommand(id, cmdWord, arg1, arg2, subjects);
+    if (gsubj->content[arg1].subjectType == RelationType) {
+        return processRelationCommand(id, cmdWord, arg1, arg2, subjects);
+    }
 }
 
 Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe, GrowSubj* gsubj)
@@ -301,6 +326,7 @@ SubjectType setType(char character)
 void parseFile(char* filePath)
 {
     Universe* universe = malloc(sizeof(Universe));
+
     // current character returned from getc
     char character;
     // count of spaces = count of string = size of relation/set array
@@ -405,6 +431,6 @@ int main(int argc, char** argv)
     }
 */
 // Parsing the content into structs.
-//parseFile(filePath); // TODO Dunno co to bude vracet to vymyslíme později
+//parseFile(filePath); // TODO: Dunno co to bude vracet to vymyslíme později
     return 0;
 }
