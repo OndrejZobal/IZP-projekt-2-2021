@@ -56,8 +56,6 @@ void splitStringintoArray(char* string, char** array, char* delimiter)
  */
 
 void removeChar(char* str, char charToRemove) {
-    printf("char to remove: %c from: %s\n", charToRemove, str);
-
     int len = strlen(str);
     for (int i = 0; i < len; i++)
     {
@@ -65,7 +63,6 @@ void removeChar(char* str, char charToRemove) {
         {
             for (int j = i; j < len; j++)
             {
-                printf("str[j]: %c is now str[j+1]: %c\n", str[j], str[j + 1]);
                 str[j] = str[j + 1];
             }
             len--;
