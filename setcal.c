@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 #include "utility.h"
 #include "structs.h"
 #include "growstr.c"
@@ -666,6 +667,8 @@ char* readFilePath(int argc, char** argv)
 
 int main(int argc, char** argv)
 {
+    // has to be here so that rand() actually returns a random number
+    srand(time(NULL));
     // Getting the path to the file.
     char* filePath = readFilePath(argc, argv);
     if (filePath == NULL)
