@@ -1,7 +1,6 @@
 //
 // Created by vladimir on 11/27/21.
 //
-
 #ifndef setcal
 #include "../structs.h"
 #include "isInSet.h"
