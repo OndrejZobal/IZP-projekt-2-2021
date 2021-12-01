@@ -341,6 +341,7 @@ void parseFile(char* filePath)
     GrowSubj* gsubj = growSubjCreate();
 
     bool isFirstChar = true;
+    bool seenSpace = false;
 
     FILE* file = fopen(filePath, "r");
     // read current charatcter while not at the end of the file
@@ -352,6 +353,7 @@ void parseFile(char* filePath)
             gstr = growStrCreate();
             type = setType(character);
             isFirstChar = false;
+            seenSpace = false;
             continue;
         }
         // if endline is reached
@@ -373,7 +375,11 @@ void parseFile(char* filePath)
         {
             if (character == ' ')
             {
+                seenSpace = true;
+            }
+            else if (seenSpace){
                 count++;
+                seenSpace = false;
             }
             growStrAdd(gstr, character);
             //printf("Element %c added\n", character);
