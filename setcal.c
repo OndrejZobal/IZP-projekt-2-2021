@@ -166,6 +166,7 @@ int parseInt(char* str, bool* err) {
     return atoi(str);
 }
 
+// FIXME: pokud chybi parametr, funkce se dojebe
 Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects) {
     if (!strcmp(cmdWord, CMD_REFLEXIVE)) {
         printBool(isReflexive(subjects[arg1].relation_p, subjects[0].universe_p->size));
