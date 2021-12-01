@@ -93,14 +93,31 @@ void splitStringIntoPairs(char* string, char** array) {
  * @return created set with specified values
  */
 
+int hasMoreThanMaxSize(char* string) {
+    //FIXME: add max const
+    if (strlen(string) > 30) {
+        return 1;
+    }
+    return 0;
+}
+
 Relation* relationCreate(int id, int size, char* contentString, Universe* universe) {
     char** content = malloc(sizeof(char*) * size);
     Pair* pairs = malloc(sizeof(Pair) * size);
     splitStringIntoPairs(contentString, content);
 
     for (int i = 0; i < size; i++) {
+        if (hasMoreThanMaxSize(content[i])) {
+            fprintf(stderr, "value exceeds the max allowed value!\n");
+            exit(1);
+        }
+    }
+
+    for (int i = 0; i < size; i++) {
         char** helpArray = malloc(sizeof(char*) * 2);
         splitStringintoArray(content[i], helpArray, " ");
+
+
         int x = getItemIndex(universe, helpArray[0]);
         int y = getItemIndex(universe, helpArray[1]);
         if (x == -1 || y == -1) {
@@ -111,6 +128,21 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
         //printf("pair x: %d pair y: %d\n", pair.x, pair.y);
         pairs[i] = pair;
         free(helpArray); // FIXME Is this ok?? :flushed: Because I think so -O
+    }
+
+    for (int i = 0; i < size; i++) {
+        Pair helpPair = pairs[i];
+        int numberOfRepeats = 0;
+
+        for (int j = 0; j < size; j++) {
+            if (pairs[j].x == helpPair.x && pairs[j].y == helpPair.y) {
+                numberOfRepeats++;
+            }
+            if (numberOfRepeats > 1) {
+                fprintf(stderr, "pair (%d %d) appears more than once in the relation!\n");
+                exit(1);
+            }
+        }
     }
 
     Relation* relation = malloc(sizeof(Relation));
@@ -138,8 +170,14 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     char** content = malloc(sizeof(char*) * size);
 
     splitStringintoArray(contentString, content, " ");
-    for (int i = 0; i < universe->size; i++) {
+
+    for (int i = 0; i < size; i++) {
+        if (hasMoreThanMaxSize(content[i])) {
+            fprintf(stderr, "value exceeds the max allowed value!\n");
+            exit(1);
+        }
     }
+
     for (int i = 0; i < size; i++) {
         int index = getItemIndex(universe, content[i]);
         if (index == -1) {
@@ -147,6 +185,20 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
             exit(1);
         }
         intContent[i] = index;
+    }
+
+    for (int i = 0; i < size; i++) {
+        int helpIntContent = intContent[i];
+        int numberOfRepeats = 0;
+        for (int j = 0; j < size; j++) {
+            if (intContent[j] == helpIntContent) {
+                numberOfRepeats++;
+            }
+            if (numberOfRepeats > 1) {
+                fprintf(stderr, "%d appears more than once in the set!\n");
+                exit(1);
+            }
+        }
     }
 
 
@@ -181,6 +233,13 @@ Universe* universeCreate(int id, int size, char* contentString)
 
     splitStringintoArray(contentString, content, " ");
 
+    for (int i = 0; i < size; i++) {
+        if (hasMoreThanMaxSize(content[i])) {
+            fprintf(stderr, "value exceeds the max allowed value!\n");
+            exit(1);
+        }
+    }
+
     Universe* universe = malloc(sizeof(Universe));
 
 
@@ -194,6 +253,8 @@ Universe* universeCreate(int id, int size, char* contentString)
 
     return universe;
 }
+
+
 
 /**
  * parses string into number if possible
@@ -388,6 +449,7 @@ Subject parseLine(int id, int size, char* contentString, SubjectType type, Unive
     Universe* newUniverse = NULL;
     Subject subj;
 
+
     switch (type) {
     case RelationType:
         relation = relationCreate(id, size / 2, contentString, universe);
@@ -452,6 +514,7 @@ void parseFile(char* filePath)
     int id = 0;
     // string to return growStrComvertToStr to
     char* string;
+    int growSubjLength = 0;
 
     SubjectType type;
 
@@ -465,6 +528,8 @@ void parseFile(char* filePath)
     // Makes sure there is a space after the first char.
     bool afterFirstChar = false;
 
+    bool isFirstCharOfFile = true;
+
     FILE* file = fopen(filePath, "r");
     // read current charatcter while not at the end of the file
     while ((character = getc(file)) != EOF)
@@ -474,6 +539,11 @@ void parseFile(char* filePath)
         {
             gstr = growStrCreate();
             type = setType(character);
+            if (isFirstCharOfFile && type != UniverseType) {
+                fprintf(stderr, "The first character should specify a universe type!\n");
+                exit(1);
+            }
+            isFirstCharOfFile = false;
             isFirstChar = false;
             seenSpace = false;
             afterFirstChar = true;
@@ -488,6 +558,7 @@ void parseFile(char* filePath)
         {
             string = growStrConvertToStr(gstr);
             growSubjAdd(gsubj, parseLine(id, count, string, type, universe, gsubj));
+            growSubjLength++;
             printSubject(*universe, gsubj->content[gsubj->length - 1]);
 
             count = 0;
@@ -519,7 +590,10 @@ void parseFile(char* filePath)
 
     //  Send the line into a processing fucntion. (Returns Subject)
     // parseLine();
-
+    if (growSubjLength == 1 && gsubj[0].content->universe_p != NULL) {
+        fprintf(stderr, "Only universe has been specified!\n");
+        exit(1);
+    }
     free(gsubj[0].content->set_p);
     destroyUniverse(universe);
     destroyGrowSubj(gsubj);
