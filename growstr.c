@@ -99,7 +99,8 @@ char* growStrConvertToStr(GrowStr* growstr)
     {
         str[i] = growstr->content[i];
     }
-    free(growstr->content);
+    //FIXME: next line sus corruption I think guys uwu
+    //free(growstr->content);
     free(growstr);
     return str;
 }

@@ -94,8 +94,6 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
     return relation;
 }
 
-//  TODO create relationCreate
-
 /**
  * Function creates a set object with specified params
  * @param id id corresponding to the textfile row
@@ -104,9 +102,10 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
 */
 Set* setCreate(int id, int size, char* contentString, Universe* universe)
 {
-    // TODO Need to check for duplicates in the set.
+    // TODO: Need to check for duplicates in the set.
     int* intContent = malloc(sizeof(int) * size);
     char** content = malloc(sizeof(char*) * size);
+
     splitStringintoArray(contentString, content, " ");
     for (int i = 0; i < universe->size; i++) {
     }
@@ -121,6 +120,7 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
 
 
     Set* set = malloc(sizeof(Set));
+
 
     set->id = id;
     set->size = size;
@@ -138,9 +138,11 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
 Universe* universeCreate(int id, int size, char* contentString)
 {
     char** content = malloc(sizeof(char*) * size);
+
     splitStringintoArray(contentString, content, " ");
 
     Universe* universe = malloc(sizeof(Universe));
+
 
     universe->id = id;
     universe->size = size;
@@ -323,6 +325,7 @@ SubjectType setType(char character)
 void parseFile(char* filePath)
 {
     Universe* universe = malloc(sizeof(Universe));
+
     // current character returned from getc
     char character;
     // count of spaces = count of string = size of relation/set array
@@ -427,6 +430,6 @@ int main(int argc, char** argv)
     }
 */
 // Parsing the content into structs.
-//parseFile(filePath); // TODO Dunno co to bude vracet to vymyslíme později
+//parseFile(filePath); // TODO: Dunno co to bude vracet to vymyslíme později
     return 0;
 }
