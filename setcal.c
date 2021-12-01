@@ -140,7 +140,7 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
                 numberOfRepeats++;
             }
             if (numberOfRepeats > 1) {
-                fprintf(stderr, "pair (%d %d) appears more than once in the relation!\n");
+                fprintf(stderr, "pair (%d %d) appears more than once in the relation!\n", helpPair.x, helpPair.y);
                 exit(1);
             }
         }
