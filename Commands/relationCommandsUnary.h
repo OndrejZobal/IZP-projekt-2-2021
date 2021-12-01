@@ -12,10 +12,14 @@
 #include <stdbool.h>
 #include "isInSet.h"
 #include "../utility.h"
-#endif
 #include "isInSet.h"
 #include "stdbool.h"
 #include "areSetsEqual.h"
+#endif
+#include "isInSet.h"
+#include "areSetsEqual.h"
+#include <stdbool.h>
+
 
 // constructs relation full of empty pairs ('-1') // TODO utility
 Relation* constructEmptyRelation(int size){
