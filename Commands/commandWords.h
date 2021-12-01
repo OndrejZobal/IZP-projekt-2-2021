@@ -1,4 +1,5 @@
 // Set commands
+// Set commands
 #define CMD_EMPTY "empty"
 #define CMD_CARD "card"
 #define CMD_COMPLEMENT "complement"
@@ -20,3 +21,8 @@
 #define CMD_INJECTIVE "injective"
 #define CMD_SURJECTIVE "surjective"
 #define CMD_BIJECTIVE "bijective"
+
+// Relations Bonus
+#define CMD_CLOSURE_REF "closure_ref"
+#define CMD_CLOSURE_SYM "closure_sym"
+#define CMD_CLOSURE_TRANS "closure_trans"

@@ -95,7 +95,7 @@ char* growStrConvertToStr(GrowStr* growstr)
         printf("SUSUS hella susu");
         exit(1);
     }
-    for (int i = 0; i < growstr->length; i++)
+    for (int i = 0; i < growstr->length+1; i++)
     {
         str[i] = growstr->content[i];
     }

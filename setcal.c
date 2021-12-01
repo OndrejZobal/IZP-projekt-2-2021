@@ -169,80 +169,118 @@ int parseInt(char* str, bool* err) {
     return atoi(str);
 }
 
-// FIXME: pokud chybi parametr, funkce se dojebe
-Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects) {
-    if (!strcmp(cmdWord, CMD_REFLEXIVE)) {
-        printBool(isReflexive(subjects[arg1].relation_p, subjects[0].universe_p->size));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(cmdWord, CMD_SYMMETRIC)) {
-        printBool(isSymmetric(subjects[arg1].relation_p));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(cmdWord, CMD_ANTISYMMETRIC)) {
-        printBool(isAntisymmetric(subjects[arg1].relation_p));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(cmdWord, CMD_TRANSITIVE)) {
-        printBool(isTransitive(subjects[arg1].relation_p));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(cmdWord, CMD_FUNCTION)) {
-        printBool(isFunction(subjects[arg1].relation_p));
-        return createEmptySubject(id);
+Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int arg3, Subject* subjects) {
+
+    if(arg2 == -1 && arg3 == -1){
+        if (!strcmp(cmdWord, CMD_REFLEXIVE)) {
+            printBool(isReflexive(subjects[arg1].relation_p, subjects[0].universe_p->size));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_SYMMETRIC)) {
+            printBool(isSymmetric(subjects[arg1].relation_p));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_ANTISYMMETRIC)) {
+            printBool(isAntisymmetric(subjects[arg1].relation_p));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_TRANSITIVE)) {
+            printBool(isTransitive(subjects[arg1].relation_p));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_FUNCTION)) {
+            printBool(isFunction(subjects[arg1].relation_p));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_DOMAIN)) {
+            return createSubjectFromSetPtr(domain(subjects[arg1].relation_p));
+        }
+        if (!strcmp(cmdWord, CMD_CODOMAIN)) {
+            return createSubjectFromSetPtr(codomain(subjects[arg1].relation_p));
+        }
+
+        if (!strcmp(cmdWord, CMD_CLOSURE_REF)) {
+            return createSubjectFromRelationPtr(transitiveClosure(subjects[arg1].relation_p));
+        }
+        if (!strcmp(cmdWord, CMD_CLOSURE_SYM)) {
+            return createSubjectFromRelationPtr(symmetricClosure(subjects[arg1].relation_p));
+        }
+        if (!strcmp(cmdWord, CMD_CLOSURE_TRANS)) {
+            return createSubjectFromRelationPtr(transitiveClosure(subjects[arg1].relation_p));
+        }
     }
 
-    if (!strcmp(cmdWord, CMD_DOMAIN)) {
-        return createSubjectFromSetPtr(domain(subjects[arg1].relation_p));
+    // Functions requiering stes as args
+    if(subjects[arg2].subjectType == SetType
+       && subjects[arg3].subjectType == SetType
+       && arg2 == -1 && arg3 == -1){
+        if (!strcmp(cmdWord, CMD_INJECTIVE)) {
+            printBool(isInjective(subjects[arg1].relation_p, subjects[arg2].set_p, subjects[arg3].set_p));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_SURJECTIVE)) {
+            printBool(isSurjective(subjects[arg1].relation_p, subjects[arg2].set_p, subjects[arg3].set_p));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_BIJECTIVE)) {
+            printBool(isBijective(subjects[arg1].relation_p, subjects[arg2].set_p, subjects[arg3].set_p));
+            return createEmptySubject(id);
+        }
     }
-    if (!strcmp(cmdWord, CMD_CODOMAIN)) {
-        return createSubjectFromSetPtr(codomain(subjects[arg1].relation_p));
-    }
-    // TODO
+
+
+    invalidCommandCrash(id, cmdWord);
+    // This does nothing but we got a warning without it.
+    return createEmptySubject(0);
 }
 
 Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects) {
-    if (!strcmp(cmdWord, CMD_EMPTY)) {
-        printBool(isEmpty(subjects[arg1].set_p));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(cmdWord, CMD_CARD)) {
-        return createEmptySubject(id);
-    }
-    if (!strcmp(cmdWord, CMD_COMPLEMENT)) {
-        return createSubjectFromSetPtr(getComplement(subjects[arg1].set_p, subjects[0].universe_p->size));
+    if (arg2 == -1){
+        if (!strcmp(cmdWord, CMD_EMPTY)) {
+            printBool(isEmpty(subjects[arg1].set_p));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_CARD)) {
+            printf("%d\n", card(subjects[arg1].set_p));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_COMPLEMENT)) {
+            return createSubjectFromSetPtr(getComplement(subjects[arg1].set_p, subjects[0].universe_p->size));
+        }
     }
 
     // Processing commands with two inputs
-    if (arg2 == -1 || (subjects[arg2].subjectType != SetType && subjects[arg2].subjectType != UniverseType)) {
-        argCrash(id);
+    if (arg2 != -1 && (subjects[arg2].subjectType == SetType || subjects[arg2].subjectType == UniverseType)) {
+        if (!strcmp(cmdWord, CMD_UNION)) {
+            return createSubjectFromSetPtr(setUnion(subjects[arg1].set_p, subjects[arg2].set_p));
+        }
+        if (!strcmp(cmdWord, CMD_INTERSECT)) {
+            return createSubjectFromSetPtr(intersect(subjects[arg1].set_p, subjects[arg2].set_p));
+        }
+        if (!strcmp(cmdWord, CMD_MINUS)) {
+            return createSubjectFromSetPtr(minus(subjects[arg1].set_p, subjects[arg2].set_p));
+        }
+        if (!strcmp(cmdWord, CMD_SUBSETEQ)) {
+            printBool(subseteq(subjects[arg1].set_p, subjects[arg2].set_p));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_SUBSET)) {
+            printBool(subset(subjects[arg1].set_p, subjects[arg2].set_p));
+            return createEmptySubject(id);
+        }
+        if (!strcmp(cmdWord, CMD_EQUALS)) {
+            printBool(areSetsEqual(subjects[arg1].set_p, subjects[arg2].set_p));
+            return createEmptySubject(id);
+        }
     }
 
-    if (!strcmp(cmdWord, CMD_UNION)) {
-        return createSubjectFromSetPtr(setUnion(subjects[arg1].set_p, subjects[arg2].set_p));
-    }
-    if (!strcmp(cmdWord, CMD_INTERSECT)) {
-        return createSubjectFromSetPtr(intersect(subjects[arg1].set_p, subjects[arg2].set_p));
-    }
-    if (!strcmp(cmdWord, CMD_MINUS)) {
-        return createSubjectFromSetPtr(minus(subjects[arg1].set_p, subjects[arg2].set_p));
-    }
-    if (!strcmp(cmdWord, CMD_SUBSETEQ)) {
-        printBool(subseteq(subjects[arg1].set_p, subjects[arg2].set_p));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(cmdWord, CMD_SUBSET)) {
-        printBool(subset(subjects[arg1].set_p, subjects[arg2].set_p));
-        return createEmptySubject(id);
-    }
-    if (!strcmp(cmdWord, CMD_EQUALS)) {
-        printBool(areSetsEqual(subjects[arg1].set_p, subjects[arg2].set_p));
-        return createEmptySubject(id);
-    }
+    invalidCommandCrash(id, cmdWord);
+    // This does nothing but we got a warning without it.
+    return createEmptySubject(0);
 }
 
 Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
-    if (size < 2) {
+    if (size < 2 || size > 4) {
         argCrash(id);
     }
 
@@ -257,20 +295,35 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
     }
 
     int arg2 = -1;
-    if (size == 3) {
+    if (size >= 3) {
         arg2 = parseInt(content[2], &conversionErr) - 1;
         if (conversionErr) {
             nanCrash(id, content[2]);
         }
     }
 
+    int arg3 = -1;
+    if (size == 4) {
+        arg3 = parseInt(content[3], &conversionErr) -1;
+        if (conversionErr) {
+            nanCrash(id, content[3]);
+        }
+    }
+
     if (gsubj->content[arg1].subjectType == SetType || gsubj->content[arg1].subjectType == UniverseType) {
+        if (arg3 != -1){
+            argCrash(id);
+        }
         return processSetCommand(id, cmdWord, arg1, arg2, subjects);
     }
     if (gsubj->content[arg1].subjectType == RelationType) {
-        return processRelationCommand(id, cmdWord, arg1, arg2, subjects);
+        return processRelationCommand(id, cmdWord, arg1, arg2, arg3, subjects);
     }
-    free(content);
+
+    argCrash(id);
+    //
+    // This does nothing but we got a warning without it.
+    return createEmptySubject(0);
 }
 
 Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe, GrowSubj* gsubj)
@@ -318,6 +371,8 @@ SubjectType setType(char character)
     default:
         fprintf(stderr, "\"%c\" is not a valid identifier!\n", character);
         syntaxCrash();
+        // Getting rid of a warning.
+        return SetType;
     }
 }
 
@@ -344,8 +399,12 @@ void parseFile(char* filePath)
     GrowStr* gstr;
     GrowSubj* gsubj = growSubjCreate();
 
+    // If current iterration is going over the first char of the line.
     bool isFirstChar = true;
+    // Counts words accourately.
     bool seenSpace = false;
+    // Makes sure there is a space after the first char.
+    bool afterFirstChar = false;
 
     FILE* file = fopen(filePath, "r");
     // read current charatcter while not at the end of the file
@@ -358,6 +417,7 @@ void parseFile(char* filePath)
             type = setType(character);
             isFirstChar = false;
             seenSpace = false;
+            afterFirstChar = true;
             continue;
         }
         // if endline is reached
@@ -380,11 +440,17 @@ void parseFile(char* filePath)
             if (character == ' ')
             {
                 seenSpace = true;
+                afterFirstChar = false;
             }
             else if (seenSpace) {
                 count++;
                 seenSpace = false;
             }
+
+            if (afterFirstChar){
+                syntaxCrash();
+            }
+
             growStrAdd(gstr, character);
             //printf("Element %c added\n", character);
             //printf("%s\n", gstr->content);
@@ -403,18 +469,17 @@ void parseFile(char* filePath)
     {
         ioCrash(filePath);
     }
-    return universe;
 }
 
 /**
  * Functions returns the file from args.
- * @param argc count of arguments.
+ * @param argc counErrort of arguments.
  * @param argv values of argumets.
  * @return Path to file from arg or NULL if no path was given
 */
 char* readFilePath(int argc, char** argv)
 {
-    if (argc < 1)
+    if (argc != 2)
     {
         return NULL;
     }
@@ -429,7 +494,8 @@ int main(int argc, char** argv)
     char* filePath = readFilePath(argc, argv);
     if (filePath == NULL)
     {
-        fprintf(stderr, "No path to file was provided!\n");
+        fprintf(stderr, "Bad command line arguments! "
+                "Provide a path to the instruction file.\n");
         return 1;
     }
 
@@ -439,7 +505,7 @@ int main(int argc, char** argv)
 
     Set *testSet = setCreate(1, 5, contentString);
     printf("set id: %d set size: %d\n", testSet->id, testSet->size);
-    for (int i = 0; i < 5; i++)
+    for (int i =Error 0; i < 5; i++)
     {
         printf("set content string at index %d = %s\n", i, testSet->content[i]);
     }

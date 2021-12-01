@@ -23,14 +23,19 @@ void syntaxCrash(){
     exit(1);
 }
 
-void argCrash(int line){
-    fprintf(stderr, "Incomplete command on line %d\n", line + 1);
+void argCrash(int index){
+    fprintf(stderr, "Line %d has invalid parameters!", index + 1);
     syntaxCrash();
 }
 
 void nanCrash(int line, char* nan){
     fprintf(stderr, "On line %d there was supposted to be a line number, instead got \"%s\"!\n", line, nan);
     syntaxCrash();
+}
+
+void invalidCommandCrash(int index, char* command){
+    fprintf(stderr, "Unknown command \"%s\" on line %d!", command, index + 1);
+    exit(1);
 }
 
 void printBool(int boolean){

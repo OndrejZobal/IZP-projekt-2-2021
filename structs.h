@@ -171,6 +171,12 @@ Subject createSubjectFromSetPtr(Set* set) {
     return subj;
 }
 
+Subject createSubjectFromRelationPtr(Relation* rel) {
+    // Copy the set to heap.
+    Subject subj = { .id = rel->id, .relation_p = rel, .subjectType = SetType };
+    return subj;
+}
+
 Subject createEmptySubject(int id) {
     Subject subj = { .id = id, .subjectType = CommandType };
     return subj;
@@ -186,6 +192,8 @@ void destroySubject(Subject* subject) {
         break;
     case UniverseType:
         destroyUniverse(subject->universe_p);
+        break;
+    default:
         break;
     }
 }
@@ -220,6 +228,8 @@ void printSubject(Universe universe, Subject subject) {
         break;
     case UniverseType:
         printUniverse(universe);
+        break;
+    default:
         break;
     }
 }
