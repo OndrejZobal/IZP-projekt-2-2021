@@ -20,9 +20,11 @@ typedef struct
 } Universe;
 
 void destroyUniverse(Universe* universe) {
+    /*
     for (int i = 0; i < universe->size; i++) {
         free(universe->content[i]);
     }
+    */
     free(universe->content);
     free(universe);
 }

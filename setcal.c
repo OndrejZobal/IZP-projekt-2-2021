@@ -41,6 +41,7 @@ void splitStringintoArray(char* string, char** array, char* delimiter)
 
         strtoken = strtok(NULL, delimiter);
     }
+    free(strtoken);
 }
 
 void removeChar(char* str, char charToRemove) {
@@ -80,10 +81,10 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
             fprintf(stderr, "Attempted to create a relation with an element outside of the universe: (%s %s)\n", helpArray[0], helpArray[1]);
             exit(1);
         }
-        free(helpArray); // FIXME Is this ok?? :flushed: Because I think so -O
         Pair pair = createPair(x, y);
         //printf("pair x: %d pair y: %d\n", pair.x, pair.y);
         pairs[i] = pair;
+        free(helpArray); // FIXME Is this ok?? :flushed: Because I think so -O
     }
 
     Relation* relation = malloc(sizeof(Relation));
@@ -91,6 +92,7 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
     relation->size = size;
     relation->pairs = pairs;
 
+    free(content);
     return relation;
 }
 
@@ -132,6 +134,7 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     }
     printf("*******\n");
     */
+    free(content);
     return set;
 }
 
@@ -267,6 +270,7 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
     if (gsubj->content[arg1].subjectType == RelationType) {
         return processRelationCommand(id, cmdWord, arg1, arg2, subjects);
     }
+    free(content);
 }
 
 Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe, GrowSubj* gsubj)
@@ -377,7 +381,7 @@ void parseFile(char* filePath)
             {
                 seenSpace = true;
             }
-            else if (seenSpace){
+            else if (seenSpace) {
                 count++;
                 seenSpace = false;
             }
@@ -391,11 +395,15 @@ void parseFile(char* filePath)
     //  Send the line into a processing fucntion. (Returns Subject)
     // parseLine();
 
+    free(gsubj[0].content->set_p);
+    destroyUniverse(universe);
+    destroyGrowSubj(gsubj);
+
     if (fclose(file))
     {
         ioCrash(filePath);
     }
-
+    return universe;
 }
 
 /**
