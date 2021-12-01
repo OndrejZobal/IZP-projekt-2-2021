@@ -78,16 +78,15 @@ int isInRelation(Pair pair, Relation *relation){
 
 // returns 1 if relation is reflexive on set Universe
 int isReflexive(Relation *relation, int universeSize){
-    int reflexivePairsCount = 0;
+    Pair reflexivePair;
     for (int i = 0; i < universeSize; ++i) {
-        if(relation->pairs[i].x == relation->pairs[i].y){
-            reflexivePairsCount++;
+        reflexivePair.x = i;
+        reflexivePair.y = i;
+        if(!isInRelation(reflexivePair, relation)){
+            return false;
         }
     }
-    if(reflexivePairsCount >= universeSize){
-        return 1;
-    }
-    return 0;
+    return 1;
 }
 
 // returns 1 if relation is symmetric
