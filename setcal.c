@@ -24,11 +24,14 @@
 
  // TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
 
- /**
-  * Functions fills given array with string split by a space delimiter
-  * @param string string to split by a delimiter.
-  * @param array array to fill the split string with.
+/**
+ * this function splits string into an array by a delimimter
+ * @param string string to be splitted
+ * @param array array to be filled with
+ * @param delimiter string that tells which character should split the string
+ * @return void
  */
+
 void splitStringintoArray(char* string, char** array, char* delimiter)
 {
     int i = 0;
@@ -44,8 +47,16 @@ void splitStringintoArray(char* string, char** array, char* delimiter)
     free(strtoken);
 }
 
+/**
+ * this function removes a specific char from a string
+ * @param string string to remove the chars from
+ * @param charToRemove char to be removed
+ * @return void
+ */
+
 void removeChar(char* str, char charToRemove) {
-    int i, j;
+    int i;
+    int j;
     int len = strlen(str);
     for (i = 0; i < len; i++)
     {
@@ -59,13 +70,28 @@ void removeChar(char* str, char charToRemove) {
             i--;
         }
     }
-    //printf("string after remove: %s\n", str);
 }
+
+/**
+ * splits string into array, which will then make pairs
+ * @param string string to be split into pairs
+ * @param array to which the string will be splitted
+ * @return created set with specified values
+ */
 
 void splitStringIntoPairs(char* string, char** array) {
     removeChar(string, '(');
     splitStringintoArray(string, array, ")");
 }
+
+/**
+ * this function creates a relation with specified values
+ * @param id the number of the row from the file
+ * @param size size = how many columns does the line have == values
+ * @param contentString string with content, that will be parsed to values
+ * @param universe universe the values are related to
+ * @return created set with specified values
+ */
 
 Relation* relationCreate(int id, int size, char* contentString, Universe* universe) {
     char** content = malloc(sizeof(char*) * size);
@@ -97,11 +123,14 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
 }
 
 /**
- * Function creates a set object with specified params
- * @param id id corresponding to the textfile row
- * @param size size of the content array
- * @param contentString string to parse and fill the content array with
-*/
+ * this function creates a set with specified values
+ * @param id the number of the row from the file
+ * @param size size = how many columns does the line have == values
+ * @param contentString string with content, that will be parsed to values
+ * @param universe universe the values are related to
+ * @return created set with specified values
+ */
+
 Set* setCreate(int id, int size, char* contentString, Universe* universe)
 {
     // TODO: Need to check for duplicates in the set.
@@ -138,6 +167,14 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     return set;
 }
 
+/**
+ * this function creates a universe with specified values
+ * @param id the number of the row from the file
+ * @param size size = how many columns does the line have == values
+ * @param contentString string with content, that will be parsed to values
+ * @return created universe with specified values
+ */
+
 Universe* universeCreate(int id, int size, char* contentString)
 {
     char** content = malloc(sizeof(char*) * size);
@@ -158,6 +195,13 @@ Universe* universeCreate(int id, int size, char* contentString)
     return universe;
 }
 
+/**
+ * parses string into number if possible
+ * @param str string to be parsed
+ * @param err variable to set the error to
+ * @return parsed string to number
+ */
+
 int parseInt(char* str, bool* err) {
     for (int i = 0; str[i] != '\0'; ++i) {
         if (str[i] > '9' || str[i] < '0') {
@@ -171,7 +215,7 @@ int parseInt(char* str, bool* err) {
 
 Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int arg3, Subject* subjects) {
 
-    if(arg2 == -1 && arg3 == -1){
+    if (arg2 == -1 && arg3 == -1) {
         if (!strcmp(cmdWord, CMD_REFLEXIVE)) {
             printBool(isReflexive(subjects[arg1].relation_p, subjects[0].universe_p->size));
             return createEmptySubject(id);
@@ -211,9 +255,9 @@ Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int a
     }
 
     // Functions requiering stes as args
-    if(subjects[arg2].subjectType == SetType
-       && subjects[arg3].subjectType == SetType
-       && arg2 == -1 && arg3 == -1){
+    if (subjects[arg2].subjectType == SetType
+        && subjects[arg3].subjectType == SetType
+        && arg2 == -1 && arg3 == -1) {
         if (!strcmp(cmdWord, CMD_INJECTIVE)) {
             printBool(isInjective(subjects[arg1].relation_p, subjects[arg2].set_p, subjects[arg3].set_p));
             return createEmptySubject(id);
@@ -235,7 +279,7 @@ Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int a
 }
 
 Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects) {
-    if (arg2 == -1){
+    if (arg2 == -1) {
         if (!strcmp(cmdWord, CMD_EMPTY)) {
             printBool(isEmpty(subjects[arg1].set_p));
             return createEmptySubject(id);
@@ -304,14 +348,14 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
 
     int arg3 = -1;
     if (size == 4) {
-        arg3 = parseInt(content[3], &conversionErr) -1;
+        arg3 = parseInt(content[3], &conversionErr) - 1;
         if (conversionErr) {
             nanCrash(id, content[3]);
         }
     }
 
     if (gsubj->content[arg1].subjectType == SetType || gsubj->content[arg1].subjectType == UniverseType) {
-        if (arg3 != -1){
+        if (arg3 != -1) {
             argCrash(id);
         }
         return processSetCommand(id, cmdWord, arg1, arg2, subjects);
@@ -325,6 +369,17 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
     // This does nothing but we got a warning without it.
     return createEmptySubject(0);
 }
+
+/**
+ * this function creates a subject with specified values
+ * @param id the number of the row from the file
+ * @param size size = how many columns does the line have
+ * @param contentString string with content, that will be parsed
+ * @param type SubjectType that tells, how to handle specific line
+ * @param universe Universe to Relate to when creating a subject based on the line
+ * @param gsubj dynamic array of subjects, which is being filled with subjects from this function
+ * @return created subject with specified values
+ */
 
 Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe, GrowSubj* gsubj)
 {
@@ -356,7 +411,11 @@ Subject parseLine(int id, int size, char* contentString, SubjectType type, Unive
 
     return subject;
 }
-
+/**
+ * this function tells what type to set to a variable based on the input char
+ * @param character character that specifies which SubjectType to return
+ * @return returns SetType related to the character
+ */
 SubjectType setType(char character)
 {
     switch (character) {
@@ -447,7 +506,7 @@ void parseFile(char* filePath)
                 seenSpace = false;
             }
 
-            if (afterFirstChar){
+            if (afterFirstChar) {
                 syntaxCrash();
             }
 
@@ -495,7 +554,7 @@ int main(int argc, char** argv)
     if (filePath == NULL)
     {
         fprintf(stderr, "Bad command line arguments! "
-                "Provide a path to the instruction file.\n");
+            "Provide a path to the instruction file.\n");
         return 1;
     }
 
