@@ -11,14 +11,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "./structs.h"
-#include "./growstr.c"
-#include "./growsubj.c"
-#include "./utility.h"
-#include "Commands/setCommandsUnary.h"
+#include "utility.h"
+#include "structs.h"
+#include "growstr.c"
+#include "growsubj.c"
 #include "Commands/isInSet.h"
-#include "Commands/setCommandsBinary.h"
 #include "Commands/areSetsEqual.h"
+#include "Commands/setCommandsUnary.h"
+#include "Commands/setCommandsBinary.h"
 #include "Commands/commandWords.h"
 #include "Commands/relationCommandsUnary.h"
 

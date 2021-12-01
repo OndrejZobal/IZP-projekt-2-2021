@@ -2,8 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "./utility.h"
+#include "utility.h"
 #endif
+
 
 typedef struct testType
 {
