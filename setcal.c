@@ -196,7 +196,7 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
                 numberOfRepeats++;
             }
             if (numberOfRepeats > 1) {
-                fprintf(stderr, "%d appears more than once in the set!\n");
+                fprintf(stderr, "%d appears more than once in the set!\n", helpIntContent);
                 exit(1);
             }
         }
