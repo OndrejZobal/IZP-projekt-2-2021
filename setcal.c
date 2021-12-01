@@ -530,6 +530,12 @@ void parseFile(char* filePath)
 
     bool isFirstCharOfFile = true;
 
+    bool  wasUniverseSet = false;
+    bool  wasSetSet = false;
+    bool  wasRelationSet = false;
+    bool wasCommandSet = false;
+
+
     FILE* file = fopen(filePath, "r");
     // read current charatcter while not at the end of the file
     while ((character = getc(file)) != EOF)
@@ -539,6 +545,7 @@ void parseFile(char* filePath)
         {
             gstr = growStrCreate();
             type = setType(character);
+
             if (isFirstCharOfFile && type != UniverseType) {
                 fprintf(stderr, "The first character should specify a universe type!\n");
                 exit(1);
@@ -557,6 +564,30 @@ void parseFile(char* filePath)
         else if (character == '\n')
         {
             string = growStrConvertToStr(gstr);
+
+            if (type == UniverseType) {
+                wasUniverseSet = true;
+            }
+            if (type == setType) {
+                if (!wasUniverseSet) {
+                    fprintf(stderr, "non valid argument order!\n");
+                    exit(1);
+                }
+                wasSetSet = true;
+            }
+
+            if (type == RelationType) {
+                if (!wasUniverseSet) {
+                    fprintf(stderr, "non valid argument order!\n");
+                    exit(1);
+                }
+                wasRelationSet = true;
+            }
+
+            if (type == CommandType) {
+                wasCommandSet = true;
+            }
+
             growSubjAdd(gsubj, parseLine(id, count, string, type, universe, gsubj));
             growSubjLength++;
             printSubject(*universe, gsubj->content[gsubj->length - 1]);
@@ -594,6 +625,18 @@ void parseFile(char* filePath)
         fprintf(stderr, "Only universe has been specified!\n");
         exit(1);
     }
+
+    if (!wasCommandSet) {
+        fprintf(stderr, "no command specified!\n");
+        exit(1);
+    }
+    /*
+    FIXME: somehow does not fokin work
+        if (!wasRelationSet && !wasSetSet) {
+            fprintf(stderr, "no set or relation!\n");
+            exit(1);
+        }
+    */
     free(gsubj[0].content->set_p);
     destroyUniverse(universe);
     destroyGrowSubj(gsubj);
@@ -646,4 +689,6 @@ int main(int argc, char** argv)
 // Parsing the content into structs.
 //parseFile(filePath); // TODO: Dunno co to bude vracet to vymyslíme později
     return 0;
+
+    //U S R C
 }
