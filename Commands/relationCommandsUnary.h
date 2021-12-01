@@ -17,6 +17,7 @@
 #include "isInSet.h"
 #include "areSetsEqual.h"
 #include <stdbool.h>
+#include <time.h>
 #endif
 
 
@@ -332,3 +333,24 @@ bool isBijective(Relation* relation, Set* s1, Set* s2){
     }
     return false;
 }
+
+// returns a random element from set. If set is empty, returns -1
+int selectSet(Set* set){
+    if(set->size == 0){
+        return -1;
+    }
+    int randomIndex = rand() % set->size;
+    printf("%d\n", randomIndex);
+    return set->content[randomIndex];
+}
+
+// returns a random Pair from relation. If relation is empty, returns a dummy Pair (-1,-1)
+Pair selectRelation(Relation* relation){
+    Pair dummyPair = {.x = -1, .y = -1};
+    if(relation->size == 0){
+        return dummyPair;
+    }
+    int randomIndex = rand() % relation->size;
+    return relation->pairs[randomIndex];
+}
+
