@@ -72,8 +72,8 @@ void growSubjAdd(GrowSubj* growstr, Subject subj) {
 }
 
 void destroyGrowSubj(GrowSubj* growsubj) {
-    for (int i = 0; i < growsubj->length; i++){
-        // FIXME TODO BUG destroySubject(growsubj->content[i]);
+    for (int i = 0; i < growsubj->length; i++) {
+        destroySubject(&growsubj->content[i]);
     }
     free(growsubj->content);
     free(growsubj);

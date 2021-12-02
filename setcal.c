@@ -33,7 +33,7 @@
  * @return void
  */
 
-void splitStringintoArray(char* string, char** array, int size,  char* delimiter)
+void splitStringintoArray(char* string, char** array, int size, char* delimiter)
 {
     int i = 0;
     char* tempstr = malloc((strlen(string) + 1) * sizeof(char));
@@ -47,7 +47,7 @@ void splitStringintoArray(char* string, char** array, int size,  char* delimiter
     }
 
     //char** jesuschrist = malloc(sizeof(char*) * size);
-    for (int j = 0; j < size; j++){
+    for (int j = 0; j < size; j++) {
         int len = strlen(array[j]) + 1;
         char* godhavemercy = malloc(len * sizeof(char));
         strcpy(godhavemercy, array[j]);
@@ -135,7 +135,7 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
         //printf("pair x: %d pair y: %d\n", pair.x, pair.y);
         pairs[i] = pair;
 
-        for (int i = 0; i < 2; i++){
+        for (int i = 0; i < 2; i++) {
             free(helpArray[i]);
         }
     }
@@ -160,7 +160,7 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
     relation->size = size;
     relation->pairs = pairs;
 
-    for (int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++) {
         free(content[i]);
     }
     free(content);
@@ -228,7 +228,7 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     }
     printf("*******\n");
     */
-    for (int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++) {
         free(content[i]);
     }
     free(content);
@@ -549,9 +549,6 @@ void parseFile(char* filePath)
     // Makes sure there is a space after the first char.
     bool afterFirstChar = false;
 
-    // FIXME poopoo
-    bool isFirstCharOfFile = true;
-
     bool wasUniverseSet = false;
     bool wasSetSet = false;
     bool wasRelationSet = false;
@@ -568,11 +565,12 @@ void parseFile(char* filePath)
             gstr = growStrCreate();
             type = setType(character);
 
-            if (isFirstCharOfFile && type != UniverseType) {
+            if (id == 0 && type != UniverseType) {
+                printf("specified type: %d count: %d\n", type, count);
                 fprintf(stderr, "The first character should specify a universe type!\n");
                 exit(1);
             }
-            isFirstCharOfFile = false;
+
             isFirstChar = false;
             seenSpace = false;
             afterFirstChar = true;
