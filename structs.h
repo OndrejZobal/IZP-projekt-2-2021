@@ -20,11 +20,9 @@ typedef struct
 } Universe;
 
 void destroyUniverse(Universe* universe) {
-    /*
     for (int i = 0; i < universe->size; i++) {
         free(universe->content[i]);
     }
-    */
     free(universe->content);
     free(universe);
 }
@@ -192,10 +190,20 @@ void destroySubject(Subject* subject) {
         break;
     case UniverseType:
         destroyUniverse(subject->universe_p);
+        destroySet(subject->set_p);
         break;
+    case CommandType:
+        if (subject->set_p != NULL){
+            destroySet(subject->set_p);
+        }
+        if (subject->relation_p != NULL){
+            destroyRelation(subject->relation_p);
+        }
+
     default:
         break;
     }
+    //free(subject);
 }
 
 void printSet(Universe universe, Set set) {

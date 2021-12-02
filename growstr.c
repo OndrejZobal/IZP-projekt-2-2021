@@ -92,15 +92,15 @@ char* growStrConvertToStr(GrowStr* growstr)
     char* str = malloc(sizeof(char) * growstr->length+1);
     if (str == NULL)
     {
-        printf("SUSUS hella susu");
+        printf("SUSUS hella susu :flushed:");
         exit(1);
     }
     for (int i = 0; i < growstr->length+1; i++)
     {
         str[i] = growstr->content[i];
     }
-    //FIXME: next line sus corruption I think guys uwu
-    //free(growstr->content);
+
+    free(growstr->content);
     free(growstr);
     return str;
 }

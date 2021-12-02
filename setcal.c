@@ -54,7 +54,6 @@ void splitStringintoArray(char* string, char** array, int size,  char* delimiter
         array[j] = godhavemercy;
     }
 
-
     free(tempstr);
     free(strtoken);
 }
@@ -122,8 +121,8 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
     }
 
     for (int i = 0; i < size; i++) {
-        char** helpArray = malloc(sizeof(char*) * 2);
-        splitStringintoArray(content[i], helpArray, size, " ");
+        char* helpArray[2];
+        splitStringintoArray(content[i], helpArray, 2, " ");
 
 
         int x = getItemIndex(universe, helpArray[0]);
@@ -135,7 +134,10 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
         Pair pair = createPair(x, y);
         //printf("pair x: %d pair y: %d\n", pair.x, pair.y);
         pairs[i] = pair;
-        free(helpArray); // FIXME Is this ok?? :flushed: Because I think so -O
+
+        for (int i = 0; i < 2; i++){
+            free(helpArray[i]);
+        }
     }
 
     for (int i = 0; i < size; i++) {
@@ -158,6 +160,9 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
     relation->size = size;
     relation->pairs = pairs;
 
+    for (int i = 0; i < size; i++){
+        free(content[i]);
+    }
     free(content);
     return relation;
 }
@@ -223,6 +228,9 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     }
     printf("*******\n");
     */
+    for (int i = 0; i < size; i++){
+        free(content[i]);
+    }
     free(content);
     return set;
 }
@@ -427,12 +435,17 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
         if (arg3 != -1) {
             argCrash(id);
         }
-        return processSetCommand(id, cmdWord, arg1, arg2, subjects);
+        Subject newsubj = processSetCommand(id, cmdWord, arg1, arg2, subjects);
+        freeString(content, size);
+        return newsubj;
     }
     if (gsubj->content[arg1].subjectType == RelationType) {
-        return processRelationCommand(id, cmdWord, arg1, arg2, arg3, subjects);
+        Subject newsubj = processRelationCommand(id, cmdWord, arg1, arg2, arg3, subjects);
+        freeString(content, size);
+        return newsubj;
     }
 
+    freeString(content, size);
     argCrash(id);
     //
     // This does nothing but we got a warning without it.
@@ -536,11 +549,12 @@ void parseFile(char* filePath)
     // Makes sure there is a space after the first char.
     bool afterFirstChar = false;
 
+    // FIXME poopoo
     bool isFirstCharOfFile = true;
 
-    bool  wasUniverseSet = false;
-    bool  wasSetSet = false;
-    bool  wasRelationSet = false;
+    bool wasUniverseSet = false;
+    bool wasSetSet = false;
+    bool wasRelationSet = false;
     bool wasCommandSet = false;
 
 
@@ -600,6 +614,7 @@ void parseFile(char* filePath)
             growSubjLength++;
             printSubject(*universe, gsubj->content[gsubj->length - 1]);
 
+            free(string);
             count = 0;
             id++;
             isFirstChar = true;
@@ -644,8 +659,8 @@ void parseFile(char* filePath)
         exit(1);
     }
 
-    free(gsubj[0].content->set_p);
-    destroyUniverse(universe);
+    //free(gsubj->content[0].set_p);
+    //destroyUniverse(universe);
     destroyGrowSubj(gsubj);
 
     if (fclose(file))

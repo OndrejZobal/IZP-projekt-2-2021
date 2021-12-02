@@ -45,3 +45,9 @@ void printBool(int boolean){
     }
     printf("%s\n", (boolean == 1) ? "true" : "false");
 }
+
+void freeString(char** strings, int size){
+    for (int i = 0; i < size; i++){
+        free(strings[i]);
+    }
+}
