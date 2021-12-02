@@ -67,19 +67,15 @@ void splitStringintoArray(char* string, char** array, int size,  char* delimiter
  */
 
 void removeChar(char* str, char charToRemove) {
-    int i;
-    int j;
     int len = strlen(str);
-    for (i = 0; i < len; i++)
+    for (int i = 0; i < len; i++)
     {
         if (str[i] == charToRemove)
         {
-            for (j = i; j < len; j++)
+            for (int j = i; j < len; j++)
             {
                 str[j] = str[j + 1];
             }
-            len--;
-            i--;
         }
     }
 }
