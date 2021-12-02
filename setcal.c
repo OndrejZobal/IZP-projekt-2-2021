@@ -65,8 +65,6 @@ void removeChar(char* str, char charToRemove) {
             {
                 str[j] = str[j + 1];
             }
-            len--;
-            i--;
         }
     }
 }
