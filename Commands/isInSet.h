@@ -1,7 +1,3 @@
-//
-// Created by vladimir on 11/26/21.
-//
-
 #ifndef setcal
 #include "../structs.h"
 #endif

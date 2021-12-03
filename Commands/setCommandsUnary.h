@@ -13,31 +13,31 @@
 #include "areSetsEqual.h"
 #endif
 
-// TODO remove unnecessary includes everywhere
-// TODO check naming practice bullshit
-// TODO FIX THE MEMORY LEAK WTFFFFFFF
 
-Set *constructSet(int id, int size, int *content){ // TODO this is just for testing, remove later
-    Set *set;
-    set = constructEmptySet(size);
-    set->id = id;
-    set->size = size;
-    free(set->content);
-    set->content = content;
-    return set;
-}
-
-// returns 0 if size > 0, returns 1 if size = 0
+/**
+ * returns true if set size = 0
+ * @param set the set we are checking
+ * @return true or false
+ */
 int isEmpty(Set *set) {
     return !set->size;
 }
 
-// returns the number of elements in set
+/**
+ * returns the number of elements in set
+ * @param set the set we want to know the size of
+ * @return the size of set
+ */
 int card(Set *set){
     return set->size;
 }
 
-// returns the complement of set
+/**
+ * returns the complement of set, compared to universe
+ * @param set the we want the complement of
+ * @param universeSize how many elements are in the universe
+ * @return Set that is a complement of set
+ */
 Set *getComplement(Set *set, int universeSize) {
     int complementCurrentLength = 0; // how many elements in complement already have a value
     Set *complement = constructEmptySet(universeSize - set->size);

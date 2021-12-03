@@ -150,15 +150,23 @@ Set createSet(int id, int size, int* content) {
  * @return A brand new set
  */
 Set* constructEmptySet(int size) {
+
     int* list = malloc(size * sizeof(int));
-    for (int i = 0; i < size; i++) {
-        list[i] = -1;
+    if(size != 0){
+        for (int i = 0; i < size; i++) {
+            list[i] = -1;
+        }
     }
     Set* set;
     set = malloc(sizeof(Set));
     set->id = 0;
     set->size = size;
-    set->content = list;
+    if(size == 0){
+        set->content = NULL;
+    }
+    else{
+        set->content = list;
+    }
     return set;
 }
 
