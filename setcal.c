@@ -23,6 +23,8 @@
 #include "Commands/commandWords.h"
 #include "Commands/relationCommandsUnary.h"
 
+#define MAX_INPUT_FILE_ROWS 999
+#define MAX_ROW_ELEMENT_SIZE 30
  // TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
 
 /**
@@ -156,8 +158,7 @@ void splitStringIntoPairs(char* string, int size, char** array) {
  */
 
 int hasMoreThanMaxSize(char* string) {
-    //FIXME: add max const
-    if (strlen(string) > 30) {
+    if (strlen(string) > MAX_ROW_ELEMENT_SIZE) {
         return 1;
     }
     return 0;
@@ -185,12 +186,7 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
     Pair* pairs = malloc(sizeof(Pair) * size);
     splitStringIntoPairs(contentString, size, content);
 
-    for (int i = 0; i < size; i++) {
-        if (hasMoreThanMaxSize(content[i])) {
-            fprintf(stderr, "value exceeds the max allowed value!\n");
-            exit(1);
-        }
-    }
+
 
     for (int i = 0; i < size; i++) {
         char* helpArray[2];
@@ -265,16 +261,6 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     if (!checkValidContent(content, size)) {
         fprintf(stderr, "given values contain forbidden characters!\n");
         exit(1);
-    }
-
-
-
-
-    for (int i = 0; i < size; i++) {
-        if (hasMoreThanMaxSize(content[i])) {
-            fprintf(stderr, "value exceeds the max allowed value!\n");
-            exit(1);
-        }
     }
 
     for (int i = 0; i < size; i++) {
@@ -648,7 +634,7 @@ void parseFile(char* filePath)
     // read current charatcter while not at the end of the file
     while ((character = getc(file)) != EOF)
     {
-        if (id > 1000) {
+        if (id > MAX_INPUT_FILE_ROWS) {
             fprintf(stderr, "The file has to contain maximum of 1000 lines!\n");
         }
         // only set SubjectType using fist character of the line
