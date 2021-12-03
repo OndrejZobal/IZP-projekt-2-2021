@@ -81,6 +81,13 @@ void removeChar(char* str, char charToRemove) {
     }
 }
 
+/**
+ * this function checks if values, that should be use to create U/S/R contain symbols
+ * @param content string array containing all elements
+ * @param size size of content array
+ * @return true if content doesnt contain symbols
+ */
+
 bool hasSymbols(char** content, int size) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; (size_t)j < strlen(content[i]); j++) {
@@ -93,6 +100,13 @@ bool hasSymbols(char** content, int size) {
 
 }
 
+/**
+ * this function checks if values, that should be use to create U/S/R contain numbers
+ * @param content string array containing all elements
+ * @param size size of content array
+ * @return true if content doesnt contain number
+ */
+
 bool hasNumbers(char** content, int size) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; (size_t)j < strlen(content[i]); j++) {
@@ -103,6 +117,13 @@ bool hasNumbers(char** content, int size) {
     }
     return false;
 }
+
+/**
+ * this function checks if values, that should be use to create U/S/R contain command names
+ * @param content string array containing all elements
+ * @param size size of content array
+ * @return true if content doesnt contain any of forbidden values
+ */
 
 bool hasCommandName(char** content, int size) {
     const int commandNameArraySize = 21;
@@ -121,18 +142,25 @@ bool hasCommandName(char** content, int size) {
     return false;
 }
 
-int checkValidContent(char** content, int size) {
+/**
+ * this function checks if values, that should be use to create U/S/R contain forbidden characters
+ * @param content string array containing all elements
+ * @param size size of content array
+ * @return return true if contend is valid
+ */
+
+bool checkValidContent(char** content, int size) {
     if (!hasSymbols(content, size) && !hasNumbers(content, size) && !hasCommandName(content, size)) {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 /**
  * splits string into array, which will then make pairs
  * @param string string to be split into pairs
  * @param array to which the string will be splitted
- * @return created set with specified values
+ * @return void
  */
 
 void splitStringIntoPairs(char* string, int size, char** array) {
@@ -148,21 +176,27 @@ void splitStringIntoPairs(char* string, int size, char** array) {
 
 
 
+
+
 /**
- * this function creates a relation with specified values
- * @param id the number of the row from the file
- * @param size size = how many columns does the line have == values
- * @param contentString string with content, that will be parsed to values
- * @param universe universe the values are related to
- * @return created set with specified values
+ * this function tells, if universum contains longer element than it should
+ * @param string string to check
+ * @return return true if string is longer than max value
  */
 
-int hasMoreThanMaxSize(char* string) {
+bool hasMoreThanMaxSize(char* string) {
     if (strlen(string) > MAX_ROW_ELEMENT_SIZE) {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
+
+/**
+ * this function tells, whether there is
+ * @param pairs int array of pairs
+ * @param size size of intContent array
+ * @return return true if relation contains duplicit pair
+ */
 
 bool hasRepeatingPairs(Pair* pairs, int size) {
     for (int i = 0; i < size; i++) {
@@ -180,6 +214,15 @@ bool hasRepeatingPairs(Pair* pairs, int size) {
     }
     return false;
 }
+
+/**
+ * this function creates a relation with specified values
+ * @param id the number of the row from the file
+ * @param size size = how many columns does the line have == values
+ * @param contentString string with content, that will be parsed to values
+ * @param universe universe the values are related to
+ * @return created set with specified values
+ */
 
 Relation* relationCreate(int id, int size, char* contentString, Universe* universe) {
     char** content = malloc(sizeof(char*) * size);
@@ -227,12 +270,10 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
 }
 
 /**
- * this function creates a set with specified values
- * @param id the number of the row from the file
- * @param size size = how many columns does the line have == values
- * @param contentString string with content, that will be parsed to values
- * @param universe universe the values are related to
- * @return created set with specified values
+ * this function tells, whether there is duplicitt element in set
+ * @param intContent int array of int elements
+ * @param size size of intContent array
+ * @return return true if relation contains duplicit pair
  */
 
 bool hasRepeatingElement(int* intContent, int size) {
@@ -250,6 +291,15 @@ bool hasRepeatingElement(int* intContent, int size) {
     }
     return false;
 }
+
+/**
+ * this function creates a set with specified values
+ * @param id the number of the row from the file
+ * @param size size = how many columns does the line have == values
+ * @param contentString string with content, that will be parsed to values
+ * @param universe universe the values are related to
+ * @return created set with specified values
+ */
 
 Set* setCreate(int id, int size, char* contentString, Universe* universe)
 {
