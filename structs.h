@@ -241,7 +241,7 @@ Subject createSubjectFromSetPtr(Set* set) {
  */
 Subject createSubjectFromRelationPtr(Relation* rel) {
     // Copy the set to heap.
-    Subject subj = { .id = rel->id, .relation_p = rel, .subjectType = SetType };
+    Subject subj = { .id = rel->id, .relation_p = rel, .subjectType = RelationType };
     return subj;
 }
 
