@@ -24,15 +24,14 @@
  * @return relation full of '-1'
  */
 Relation* constructEmptyRelation(int size){
-
     Relation* relation = malloc(sizeof(Relation));
     relation->id = 0;
     relation->size = size;
-    relation->pairs = malloc(size * sizeof(Pair));
     if(relation->size == 0){
         relation->pairs = NULL;
         return relation;
     }
+    relation->pairs = malloc(size * sizeof(Pair));
     for (int i = 0; i < relation->size; ++i) {
         relation->pairs[i].x = -1;
         relation->pairs[i].y = -1;

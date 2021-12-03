@@ -439,7 +439,7 @@ Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int a
         }
 
         if (!strcmp(cmdWord, CMD_CLOSURE_REF)) {
-            return createSubjectFromRelationPtr(transitiveClosure(subjects[arg1].relation_p));
+            return createSubjectFromRelationPtr(reflexiveClosure(subjects[arg1].relation_p, subjects[0].universe_p->size));
         }
         if (!strcmp(cmdWord, CMD_CLOSURE_SYM)) {
             return createSubjectFromRelationPtr(symmetricClosure(subjects[arg1].relation_p));
