@@ -18,10 +18,10 @@
 #include "growsubj.c"
 #include "Commands/isInSet.h"
 #include "Commands/areSetsEqual.h"
+#include "Commands/relationCommandsUnary.h"
 #include "Commands/setCommandsUnary.h"
 #include "Commands/setCommandsBinary.h"
 #include "Commands/commandWords.h"
-#include "Commands/relationCommandsUnary.h"
 
 #define MAX_INPUT_FILE_ROWS 999
 #define MAX_ROW_ELEMENT_SIZE 30

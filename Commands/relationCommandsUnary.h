@@ -1,15 +1,10 @@
-//
-// Created by vladimir on 11/27/21.
-//
 #ifndef setcal
 #include "../structs.h"
-#include "isInSet.h"
 #include "areSetsEqual.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "isInSet.h"
 #include "../utility.h"
 #include "isInSet.h"
 #include "stdbool.h"
@@ -21,6 +16,13 @@
 #endif
 
 
+
+
+/**
+ *
+ * @param size size that should be allocated for the relation
+ * @return relation full of '-1'
+ */
 // constructs relation full of empty pairs ('-1') // TODO utility
 Relation* constructEmptyRelation(int size){
     Relation* relation = malloc(sizeof(Relation));
@@ -34,7 +36,11 @@ Relation* constructEmptyRelation(int size){
     return relation;
 }
 
-// reallocs the relation so that it doesnt contain any empty pairs // TODO utility
+/**
+ * reallocates the relation so that it doesnt contain any "empty" pairs
+ * @param relation the relation to be reallocated
+ * @param newSize size of relation after reallocating
+ */
 void reallocRelationToFit(Relation* relation, int newSize){
     Pair* newPairs;
     newPairs = realloc(relation->pairs, newSize*sizeof(Pair));
@@ -47,7 +53,14 @@ void reallocRelationToFit(Relation* relation, int newSize){
     }
 }
 
-// reallocs the set so that it doesnt contain any empty pairs // TODO utility, it belongs to a completely different file
+/**
+ * reallocs the set so that it doesnt contain any empty pairs
+ * @param set set to be reallocated
+ * @param newSize size of the reallocated set
+ */
+
+// TODO utility, it belongs to a completely different file
+
 void reallocSetToFit(Set* set, int newSize){
     int* newContent;
     newContent = realloc(set->content, newSize * sizeof(int));
@@ -60,24 +73,39 @@ void reallocSetToFit(Set* set, int newSize){
     }
 }
 
-// copies relation "from" to relation "to" // TODO utility
+/**
+ * copies relation content
+ * @param from the relation to copy from
+ * @param to the relation to copy to
+ */
+
 void cloneRelation(Relation* from, Relation* to){
     for (int i = 0; i < from->size; ++i) {
         to->pairs[i] = from->pairs[i];
     }
 }
 
-// returns 1 if pair is in relation // TODO utility
-int isInRelation(Pair pair, Relation *relation){
+/**
+ * returns true if pair is in relation
+ * @param pair the pair we are looking for in the relation
+ * @param relation the relation we are searching
+ * @return
+ */
+bool isInRelation(Pair pair, Relation *relation){
     for (int i = 0; i < relation->size; ++i) {
         if(pair.x == relation->pairs[i].x && pair.y == relation->pairs[i].y){
-            return 1;
+            return true;
         }
     }
-    return 0;
+    return false;
 }
 
-// returns 1 if relation is reflexive on set Universe
+/**
+ * returns true if the relation is reflexive on set Universe
+ * @param relation the relation we are checking
+ * @param universeSize how many elemnts does universe have
+ * @return true or false
+ */
 int isReflexive(Relation *relation, int universeSize){
     Pair reflexivePair;
     for (int i = 0; i < universeSize; ++i) {
@@ -90,8 +118,12 @@ int isReflexive(Relation *relation, int universeSize){
     return 1;
 }
 
-// returns 1 if relation is symmetric
-int isSymmetric(Relation *relation){
+/**
+ * returns true if relation is symmetric
+ * @param relation the relation we are checking
+ * @return true or false
+ */
+bool isSymmetric(Relation *relation){
     Pair flippedPair;
     for (int i = 0; i < relation->size; ++i) {
         if(relation->pairs[i].x == relation->pairs[i].y){
@@ -100,15 +132,18 @@ int isSymmetric(Relation *relation){
         flippedPair.x = relation->pairs[i].y;
         flippedPair.y = relation->pairs[i].x;
         if(!isInRelation(flippedPair, relation)){
-            return 0;
+            return false;
         }
     }
-    return 1;
+    return true;
 }
 
-
-// returns 1 if relation is antisymmetric
-int isAntisymmetric(Relation *relation){
+/**
+ * returns true if relation is antisymmetric
+ * @param relation the relation we are checking
+ * @return true or false
+ */
+bool isAntisymmetric(Relation *relation){
     Pair flippedPair;
     for (int i = 0; i < relation->size; ++i) {
         if(relation->pairs[i].x == relation->pairs[i].y){
@@ -117,14 +152,18 @@ int isAntisymmetric(Relation *relation){
         flippedPair.x = relation->pairs[i].y;
         flippedPair.y = relation->pairs[i].x;
         if(isInRelation(flippedPair, relation)){
-            return 0;
+            return false;
         }
     }
-    return 1;
+    return true;
 }
 
 
-// returns 1 if relation is transitive
+/**
+ * returns true if relation is transitive
+ * @param relation the relation we are checking
+ * @return true or false
+ */
 int isTransitive(Relation *relation){
     Pair gluedPair;
     int glue;
@@ -146,7 +185,11 @@ int isTransitive(Relation *relation){
     return 1;
 }
 
-// returns 1 if relation is function
+/**
+ * returns true if relation is a function
+ * @param relation the relation we are checking
+ * @return true or false
+ */
 int isFunction(Relation *relation){
     int xValue;
     int yValue;
@@ -164,10 +207,17 @@ int isFunction(Relation *relation){
     return 1;
 }
 
-// returns domain set of relation (x values)
+/**
+ * returns the domain of relation
+ * @param relation the relation we want the domain of
+ * @return Set which contains domain elements of relation
+ */
 Set* domain(Relation *relation){
     int domainCurrentLength = 0;
     Set *domainSet = constructEmptySet(relation->size);
+    if(domainSet->size == 0){
+        return domainSet;
+    }
     for (int i = 0; i < relation->size; ++i) {
         if(!isInSet(relation->pairs[i].x, domainSet)){
             domainSet->content[domainCurrentLength] = relation->pairs[i].x;
@@ -178,10 +228,17 @@ Set* domain(Relation *relation){
     return domainSet;
 }
 
-// returns codomain set of relation (y values)
+/**
+ * returns the codomain of relation
+ * @param relation the relation we want the codomain of
+ * @return Set which contains codomain elements of relation
+ */
 Set* codomain(Relation *relation){
     int codomainCurrentLength = 0;
     Set *codomainSet = constructEmptySet(relation->size);
+    if(codomainSet->size == 0){
+        return codomainSet;
+    }
     for (int i = 0; i < relation->size; ++i) {
         if(!isInSet(relation->pairs[i].y, codomainSet)){
             codomainSet->content[codomainCurrentLength] = relation->pairs[i].y;
@@ -193,8 +250,13 @@ Set* codomain(Relation *relation){
 }
 
 
+/**
+ * returns the reflexive closure of relation on universe set
+ * @param relation the relation we want the closure of
+ * @param universeSize how many elements are in universe
+ * @return the reflexive closure of relation
+ */
 
-//returns the reflexive closure of relation on universe set
 Relation* reflexiveClosure(Relation* relation, int universeSize){
     if(isReflexive(relation, universeSize)){
         return relation;
@@ -217,6 +279,11 @@ Relation* reflexiveClosure(Relation* relation, int universeSize){
     return reflexiveClosureRelation;
 }
 
+/**
+ * returns the symmetric closure of relation
+ * @param relation the relation we want the closure of
+ * @return the symmetric closure of relation
+ */
 // returns the symmetric closure of relation
 Relation* symmetricClosure(Relation* relation){
     if(isSymmetric(relation)){
@@ -240,7 +307,11 @@ Relation* symmetricClosure(Relation* relation){
     return symmetricClosureRelation;
 }
 
-// returns the transitive closure of relation
+/**
+ * returns the transitive closure of relation
+ * @param relation the relation we want the closure of
+ * @return the transitive closure of relation
+ */
 Relation* transitiveClosure(Relation* relation){
     if(isTransitive(relation)){
         return relation;
@@ -272,9 +343,14 @@ Relation* transitiveClosure(Relation* relation){
     return transClosureRelation;
 }
 
-// TODO bijective/surjective/injective need more testing
+/**
+ * returns true if relation is an injective function on sets s1 and s2
+ * @param relation the relation we are checking
+ * @param s1 x values of the function
+ * @param s2 y values of the function
+ * @return true or false
+ */
 
-// returns true if relation R is an injective function on sets s1 and s2
 bool isInjective(Relation* relation, Set* s1, Set* s2) {
     if(s1->size > s2->size){
         return false;
@@ -304,7 +380,13 @@ bool isInjective(Relation* relation, Set* s1, Set* s2) {
     return true;
 }
 
-// returns true if relation R is a surjective function on sets s1 and s2
+/**
+ * returns true if relation is a surjective function on sets s1 and s2
+ * @param relation the relation we are checking
+ * @param s1 the x values of the function
+ * @param s2 the y values of the function
+ * @return true or false
+ */
 bool isSurjective(Relation* relation, Set* s1, Set* s2){
     if(!isFunction(relation)){
         return false;
@@ -323,7 +405,13 @@ bool isSurjective(Relation* relation, Set* s1, Set* s2){
     return true;
 }
 
-// returns true if relation R is a bijective function on sets s1 and s2
+/**
+ * returns true if relation is a bijective function on sets s1 and s2
+ * @param relation the relation we are checking
+ * @param s1 the x values of the function
+ * @param s2 the y values of the function
+ * @return true or false
+ */
 bool isBijective(Relation* relation, Set* s1, Set* s2){
     if(!isFunction(relation)){
         return false;
@@ -334,7 +422,12 @@ bool isBijective(Relation* relation, Set* s1, Set* s2){
     return false;
 }
 
-// returns a random element from set. If set is empty, returns -1
+/**
+ * returns a random element from set
+ * @param set the Set we want the random element from
+ * @return random set element
+ */
+
 int selectSet(Set* set){
     if(set->size == 0){
         return -1;
@@ -344,7 +437,12 @@ int selectSet(Set* set){
     return set->content[randomIndex];
 }
 
-// returns a random Pair from relation. If relation is empty, returns a dummy Pair (-1,-1)
+/**
+ * returns a random Pair from relation
+ * @param relation the Relation we want the random Pair from
+ * @return random relation Pair
+ */
+
 Pair selectRelation(Relation* relation){
     Pair dummyPair = {.x = -1, .y = -1};
     if(relation->size == 0){
