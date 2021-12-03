@@ -290,7 +290,7 @@ int parseInt(char* str, bool* err) {
     return atoi(str);
 }
 
-Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int arg3, Subject* subjects) {
+Subject processRelationCommand(int id, char* cmdWord, int arg1, int arg2, int arg3, Subject* subjects) {
 
     if (arg2 == -1 && arg3 == -1) {
         if (!strcmp(cmdWord, CMD_REFLEXIVE)) {
@@ -349,13 +349,12 @@ Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int a
         }
     }
 
-
     invalidCommandCrash(id, cmdWord);
     // This does nothing but we got a warning without it.
     return createEmptySubject(0);
 }
 
-Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects) {
+Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects, int* rollback) {
     if (arg2 == -1) {
         if (!strcmp(cmdWord, CMD_EMPTY)) {
             printBool(isEmpty(subjects[arg1].set_p));
@@ -395,12 +394,24 @@ Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* s
         }
     }
 
+
+    if (!strcmp(cmdWord, CMD_SELECT) && arg2 != -1) {
+        int result = selectSet(subjects[arg1].set_p);
+        if(result != -1){
+            printf("%s\n", getItemName(*subjects[0].universe_p, result));
+        }
+        else{
+            *rollback = arg2;
+        }
+        return createEmptySubject(id);
+    }
+
     invalidCommandCrash(id, cmdWord);
     // This does nothing but we got a warning without it.
     return createEmptySubject(0);
 }
 
-Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
+Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj, int* rollback) {
     if (size < 2 || size > 4) {
         argCrash(id);
     }
@@ -411,36 +422,46 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
     char* cmdWord = content[0];
     bool conversionErr = false;
     int arg1 = parseInt(content[1], &conversionErr) - 1;
-    if (conversionErr) {
-        nanCrash(id, content[1]);
-    }
-
     int arg2 = -1;
-    if (size >= 3) {
-        arg2 = parseInt(content[2], &conversionErr) - 1;
+    int arg3 = -1;
+
+    if (*rollback == -2){
+
+    }
+    else {
+        arg1 = parseInt(content[1], &conversionErr) - 1;
         if (conversionErr) {
-            nanCrash(id, content[2]);
+            nanCrash(id, content[1]);
+        }
+
+        if (size >= 3) {
+            arg2 = parseInt(content[2], &conversionErr) - 1;
+            if (conversionErr) {
+                nanCrash(id, content[2]);
+            }
+        }
+
+        if (size == 4) {
+            arg3 = parseInt(content[3], &conversionErr) - 1;
+            if (conversionErr) {
+                nanCrash(id, content[3]);
+            }
         }
     }
 
-    int arg3 = -1;
-    if (size == 4) {
-        arg3 = parseInt(content[3], &conversionErr) - 1;
-        if (conversionErr) {
-            nanCrash(id, content[3]);
-        }
-    }
 
     if (gsubj->content[arg1].subjectType == SetType || gsubj->content[arg1].subjectType == UniverseType) {
         if (arg3 != -1) {
             argCrash(id);
         }
-        Subject newsubj = processSetCommand(id, cmdWord, arg1, arg2, subjects);
+        Subject newsubj = processSetCommand(id, cmdWord, arg1, arg2, subjects, rollback);
+        newsubj.command_p = createCommandPtr(id, cmdWord, arg1, arg2, arg3);
         freeString(content, size);
         return newsubj;
     }
     if (gsubj->content[arg1].subjectType == RelationType) {
         Subject newsubj = processRelationCommand(id, cmdWord, arg1, arg2, arg3, subjects);
+        newsubj.command_p = createCommandPtr(id, cmdWord, arg1, arg2, arg3);
         freeString(content, size);
         return newsubj;
     }
@@ -463,13 +484,22 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
  * @return created subject with specified values
  */
 
-Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe, GrowSubj* gsubj)
+Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe, GrowSubj* gsubj,
+                  int* rollback)
 {
     Relation* relation = NULL;
     Set* set = NULL;
     Universe* newUniverse = NULL;
     Subject subj;
 
+    if (*rollback == -2){
+        if (gsubj->content[id].subjectType == CommandType){
+            subj = processCommand(id, size, contentString, gsubj, rollback);
+        }
+        else{
+            return gsubj->content[id];
+        }
+    }
 
     switch (type) {
     case RelationType:
@@ -486,7 +516,7 @@ Subject parseLine(int id, int size, char* contentString, SubjectType type, Unive
         free(newUniverse);
         break;
     case CommandType:
-        subj = processCommand(id, size, contentString, gsubj);
+        subj = processCommand(id, size, contentString, gsubj, rollback);
         return subj;
     }
 
@@ -515,6 +545,13 @@ SubjectType setType(char character)
         syntaxCrash();
         // Getting rid of a warning.
         return SetType;
+    }
+}
+
+void fillGrowSubject(GrowSubj* gs, int n){
+    int startId = gs->content[gs->length-1].id + 1;
+    for(int i = 0; i < n; i++){
+        growSubjAdd(gs, createEmptySubject(startId + 1));
     }
 }
 
@@ -553,6 +590,9 @@ void parseFile(char* filePath)
     bool wasSetSet = false;
     bool wasRelationSet = false;
     bool wasCommandSet = false;
+
+    int rollback_line = -1;
+    int linesToSkip = 0;
 
 
     FILE* file = fopen(filePath, "r");
@@ -608,14 +648,34 @@ void parseFile(char* filePath)
                 wasCommandSet = true;
             }
 
-            growSubjAdd(gsubj, parseLine(id, count, string, type, universe, gsubj));
+            int rollback = -1;
+            growSubjAdd(gsubj, parseLine(id, count, string, type, universe, gsubj, &rollback));
             growSubjLength++;
-            printSubject(*universe, gsubj->content[gsubj->length - 1]);
+            if(linesToSkip > 0){
+                linesToSkip--;
+            }
+            else{
+                printSubject(*universe, gsubj->content[gsubj->length - 1]);
+            }
 
             free(string);
             count = 0;
             id++;
             isFirstChar = true;
+
+            if (rollback != -1){
+                if(rollback > id){
+                    printf("Hnananakana %d.\n", id-rollback);
+                    fillGrowSubject(gsubj, id - rollback < 0 ? - (id - rollback) : id - rollback);
+                    id = rollback+1;
+                    printf("Punka dunka %d\n", id);
+                }
+                else if (rollback < id){
+                    // TODO HOLY HELL
+                    id = rollback;
+                    rollback = -2;
+                }
+            }
         }
         else
         {

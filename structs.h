@@ -49,9 +49,19 @@ typedef struct
 typedef struct
 {
     int id;
+    char* cmdWord;
+    int arg1;
+    int arg2;
+    int arg3;
+} Command;
+
+typedef struct
+{
+    int id;
     Set* set_p;
     Relation* relation_p;
     Universe* universe_p;
+    Command* command_p;
     SubjectType subjectType;
 
 } Subject;
@@ -67,6 +77,22 @@ Pair createPair(int x, int y) {
     pair.x = x;
     pair.y = y;
     return pair;
+}
+
+Command* createCommandPtr(int id, char* cmdWord, int arg1, int arg2, int arg3){
+    Command* command = malloc(sizeof(Command));
+    char* newstr = malloc(sizeof(char) * (strlen(cmdWord) +1));
+    strcpy(newstr, cmdWord);
+    Command cmd = {.id = id, .cmdWord = newstr, .arg1 = arg1, .arg2 = arg2, .arg3 = arg3};
+    *command = cmd;
+    return command;
+}
+
+void destroyCommand(Command* command){
+    if (command != NULL){
+        free(command->cmdWord);
+        free(command);
+    }
 }
 
 /**
@@ -264,15 +290,18 @@ void destroySubject(Subject* subject) {
     switch (subject->subjectType) {
     case SetType:
         destroySet(subject->set_p);
+        destroyCommand(subject->command_p);
         break;
     case RelationType:
         destroyRelation(subject->relation_p);
+        destroyCommand(subject->command_p);
         break;
     case UniverseType:
         destroyUniverse(subject->universe_p);
         destroySet(subject->set_p);
         break;
     case CommandType:
+        destroyCommand(subject->command_p);
         if (subject->set_p != NULL){
             destroySet(subject->set_p);
         }

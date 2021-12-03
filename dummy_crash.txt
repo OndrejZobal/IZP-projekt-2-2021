@@ -1,3 +1,6 @@
 U a b c
 R (b a) (b b) (b c) (c b)
-C domain 2
+S
+C select 3 6
+C empty 3
+C card 3
