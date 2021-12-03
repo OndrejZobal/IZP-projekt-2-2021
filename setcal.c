@@ -79,6 +79,53 @@ void removeChar(char* str, char charToRemove) {
     }
 }
 
+bool hasSymbols(char** content, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; (size_t)j < strlen(content[i]); j++) {
+            if ((content[i][j] > 'z' || content[i][j] < 'a') && (content[i][j] > 'Z' || content[i][j] < 'A') && content[i][j] != ' ') {
+                return true;
+            }
+        }
+    }
+    return false;
+
+}
+
+bool hasNumbers(char** content, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; (size_t)j < strlen(content[i]); j++) {
+            if ((content[i][j] > '0' && content[i][j] < '9') && content[i][j] != ' ') {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool hasCommandName(char** content, int size) {
+    const int commandNameArraySize = 21;
+    const char* commandNameArray[] = { "empty", "card", "complement", "union", "intersect", "minus",
+    "subseteq", "subset", "equals", "reflexive", "symetric", "antisymmetric", "transitive",
+     "function", "domain", "codomain", "injective", "surjective", "bijective", "true", "false" };
+
+
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < commandNameArraySize; j++) {
+            if (!strcmp(content[i], commandNameArray[j])) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+int checkValidContent(char** content, int size) {
+    if (!hasSymbols(content, size) && !hasNumbers(content, size) && !hasCommandName(content, size)) {
+        return 1;
+    }
+    return 0;
+}
+
 /**
  * splits string into array, which will then make pairs
  * @param string string to be split into pairs
@@ -89,7 +136,15 @@ void removeChar(char* str, char charToRemove) {
 void splitStringIntoPairs(char* string, int size, char** array) {
     removeChar(string, '(');
     splitStringintoArray(string, array, size, ")");
+
+    if (!checkValidContent(array, size)) {
+        fprintf(stderr, "given values contain forbidden characters!\n");
+        exit(1);
+    }
 }
+
+
+
 
 /**
  * this function creates a relation with specified values
@@ -106,6 +161,23 @@ int hasMoreThanMaxSize(char* string) {
         return 1;
     }
     return 0;
+}
+
+bool hasRepeatingPairs(Pair* pairs, int size) {
+    for (int i = 0; i < size; i++) {
+        Pair helpPair = pairs[i];
+        int numberOfRepeats = 0;
+
+        for (int j = 0; j < size; j++) {
+            if (pairs[j].x == helpPair.x && pairs[j].y == helpPair.y) {
+                numberOfRepeats++;
+            }
+            if (numberOfRepeats > 1) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 Relation* relationCreate(int id, int size, char* contentString, Universe* universe) {
@@ -140,19 +212,10 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
         }
     }
 
-    for (int i = 0; i < size; i++) {
-        Pair helpPair = pairs[i];
-        int numberOfRepeats = 0;
 
-        for (int j = 0; j < size; j++) {
-            if (pairs[j].x == helpPair.x && pairs[j].y == helpPair.y) {
-                numberOfRepeats++;
-            }
-            if (numberOfRepeats > 1) {
-                fprintf(stderr, "pair (%d %d) appears more than once in the relation!\n", helpPair.x, helpPair.y);
-                exit(1);
-            }
-        }
+    if (hasRepeatingPairs(pairs, size)) {
+        fprintf(stderr, "given values contain identic pairs at line %d!\n", id + 1);
+        exit(1);
     }
 
     Relation* relation = malloc(sizeof(Relation));
@@ -176,6 +239,22 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
  * @return created set with specified values
  */
 
+bool hasRepeatingElement(int* intContent, int size) {
+    for (int i = 0; i < size; i++) {
+        int helpIntContent = intContent[i];
+        int numberOfRepeats = 0;
+        for (int j = 0; j < size; j++) {
+            if (intContent[j] == helpIntContent) {
+                numberOfRepeats++;
+            }
+            if (numberOfRepeats > 1) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 Set* setCreate(int id, int size, char* contentString, Universe* universe)
 {
     // TODO: Need to check for duplicates in the set.
@@ -183,6 +262,13 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     char** content = malloc(sizeof(char*) * size);
 
     splitStringintoArray(contentString, content, size, " ");
+    if (!checkValidContent(content, size)) {
+        fprintf(stderr, "given values contain forbidden characters!\n");
+        exit(1);
+    }
+
+
+
 
     for (int i = 0; i < size; i++) {
         if (hasMoreThanMaxSize(content[i])) {
@@ -200,18 +286,9 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
         intContent[i] = index;
     }
 
-    for (int i = 0; i < size; i++) {
-        int helpIntContent = intContent[i];
-        int numberOfRepeats = 0;
-        for (int j = 0; j < size; j++) {
-            if (intContent[j] == helpIntContent) {
-                numberOfRepeats++;
-            }
-            if (numberOfRepeats > 1) {
-                fprintf(stderr, "%d appears more than once in the set!\n", helpIntContent);
-                exit(1);
-            }
-        }
+    if (hasRepeatingElement(intContent, size)) {
+        fprintf(stderr, "given values contain repeating elements at line %d!\n", id + 1);
+        exit(1);
     }
 
 
@@ -248,6 +325,11 @@ Universe* universeCreate(int id, int size, char* contentString)
     char** content = malloc(sizeof(char*) * size);
 
     splitStringintoArray(contentString, content, size, " ");
+
+    if (!checkValidContent(content, size)) {
+        fprintf(stderr, "given values contain forbidden characters!\n");
+        exit(1);
+    }
 
     for (int i = 0; i < size; i++) {
         if (hasMoreThanMaxSize(content[i])) {
@@ -494,11 +576,14 @@ Subject parseLine(int id, int size, char* contentString, SubjectType type, Unive
 
     return subject;
 }
+
 /**
  * this function tells what type to set to a variable based on the input char
  * @param character character that specifies which SubjectType to return
  * @return returns SetType related to the character
  */
+
+
 SubjectType setType(char character)
 {
     switch (character) {
@@ -556,9 +641,16 @@ void parseFile(char* filePath)
 
 
     FILE* file = fopen(filePath, "r");
+
+    if (file == NULL) {
+        fprintf(stderr, "no file given!\n");
+    }
     // read current charatcter while not at the end of the file
     while ((character = getc(file)) != EOF)
     {
+        if (id > 1000) {
+            fprintf(stderr, "The file has to contain maximum of 1000 lines!\n");
+        }
         // only set SubjectType using fist character of the line
         if (isFirstChar)
         {
@@ -589,7 +681,7 @@ void parseFile(char* filePath)
                 wasUniverseSet = true;
             }
             if (type == SetType) {
-                if (!wasUniverseSet) {
+                if (!wasUniverseSet || wasCommandSet) {
                     fprintf(stderr, "non valid argument order!\n");
                     exit(1);
                 }
@@ -597,7 +689,7 @@ void parseFile(char* filePath)
             }
 
             if (type == RelationType) {
-                if (!wasUniverseSet) {
+                if (!wasUniverseSet || wasCommandSet) {
                     fprintf(stderr, "non valid argument order!\n");
                     exit(1);
                 }
