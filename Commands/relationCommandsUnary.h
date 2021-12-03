@@ -23,12 +23,16 @@
  * @param size size that should be allocated for the relation
  * @return relation full of '-1'
  */
-// constructs relation full of empty pairs ('-1') // TODO utility
 Relation* constructEmptyRelation(int size){
+
     Relation* relation = malloc(sizeof(Relation));
     relation->id = 0;
     relation->size = size;
     relation->pairs = malloc(size * sizeof(Pair));
+    if(relation->size == 0){
+        relation->pairs = NULL;
+        return relation;
+    }
     for (int i = 0; i < relation->size; ++i) {
         relation->pairs[i].x = -1;
         relation->pairs[i].y = -1;
@@ -115,7 +119,7 @@ int isReflexive(Relation *relation, int universeSize){
             return false;
         }
     }
-    return 1;
+    return true;
 }
 
 /**
@@ -190,7 +194,7 @@ int isTransitive(Relation *relation){
  * @param relation the relation we are checking
  * @return true or false
  */
-int isFunction(Relation *relation){
+bool isFunction(Relation *relation){
     int xValue;
     int yValue;
     for (int i = 0; i < relation->size; ++i) {
@@ -199,12 +203,12 @@ int isFunction(Relation *relation){
         for (int j = 0; j < relation->size; ++j) {
             if(relation->pairs[j].x == xValue){
                 if(relation->pairs[j].y != yValue){
-                    return 0;
+                    return false;
                 }
             }
         }
     }
-    return 1;
+    return true;
 }
 
 /**
@@ -258,10 +262,6 @@ Set* codomain(Relation *relation){
  */
 
 Relation* reflexiveClosure(Relation* relation, int universeSize){
-    if(isReflexive(relation, universeSize)){
-        return relation;
-    }
-
     Pair reflexivePair;
     int refRelCurrentLength = relation->size;
     Relation* reflexiveClosureRelation = constructEmptyRelation(relation->size + universeSize);
@@ -286,10 +286,6 @@ Relation* reflexiveClosure(Relation* relation, int universeSize){
  */
 // returns the symmetric closure of relation
 Relation* symmetricClosure(Relation* relation){
-    if(isSymmetric(relation)){
-        return relation;
-    }
-
     Pair symmetricPair;
     int symRelCurrentLength = relation->size;
     Relation* symmetricClosureRelation = constructEmptyRelation(relation->size * 2);
@@ -313,10 +309,6 @@ Relation* symmetricClosure(Relation* relation){
  * @return the transitive closure of relation
  */
 Relation* transitiveClosure(Relation* relation){
-    if(isTransitive(relation)){
-        return relation;
-    }
-
     Pair gluedPair;
     int glue;
     int transRelCurrentLength = relation->size;
