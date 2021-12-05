@@ -414,7 +414,11 @@ int parseInt(char* str, bool* err) {
  * @return A processed subject
  */
 Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int arg3, Subject* subjects) {
-
+    if (!strcmp(cmdWord, CMD_SELECT) && arg2 != -1 &&  arg3 == -1) {
+        Pair pair = selectRelation(subjects[arg1].relation_p);
+        printf("(%s %s)\n", getItemName(*subjects[0].universe_p, pair.x), getItemName(*subjects[0].universe_p, pair.y));
+        return createEmptySubject(id);
+    }
     if (arg2 == -1 && arg3 == -1) {
         if (!strcmp(cmdWord, CMD_REFLEXIVE)) {
             printBool(isReflexive(subjects[arg1].relation_p, subjects[0].universe_p->size));
@@ -504,6 +508,10 @@ Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* s
 
     // Processing commands with two inputs
     if (arg2 != -1 && (subjects[arg2].subjectType == SetType || subjects[arg2].subjectType == UniverseType)) {
+        if (!strcmp(cmdWord, CMD_SELECT) && arg2 != -1) {
+            printf("%s\n", getItemName(*subjects[0].universe_p, selectSet(subjects[arg1].set_p)));
+            return createEmptySubject(id);
+        }
         if (!strcmp(cmdWord, CMD_UNION)) {
             return createSubjectFromSetPtr(setUnion(subjects[arg1].set_p, subjects[arg2].set_p));
         }

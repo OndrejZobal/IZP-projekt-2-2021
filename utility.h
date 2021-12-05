@@ -34,7 +34,7 @@ void nanCrash(int line, char* nan){
 }
 
 void invalidCommandCrash(int index, char* command){
-    fprintf(stderr, "\"%s\" is not a valid oparation operation for given inputs! Line %d!", command, index + 1);
+    fprintf(stderr, "\"%s\" is not a valid oparation operation for given inputs! Line %d!\n", command, index + 1);
     exit(1);
 }
 

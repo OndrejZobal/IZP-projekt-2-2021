@@ -26,3 +26,6 @@
 #define CMD_CLOSURE_REF "closure_ref"
 #define CMD_CLOSURE_SYM "closure_sym"
 #define CMD_CLOSURE_TRANS "closure_trans"
+
+// Select
+#define CMD_SELECT "select"

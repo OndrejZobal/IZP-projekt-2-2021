@@ -424,7 +424,7 @@ int selectSet(Set* set){
         return -1;
     }
     int randomIndex = rand() % set->size;
-    printf("%d\n", randomIndex);
+    // printf("%d\n", randomIndex);
     return set->content[randomIndex];
 }
 
