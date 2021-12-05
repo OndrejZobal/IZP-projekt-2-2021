@@ -640,6 +640,122 @@ SubjectType setType(char character)
 }
 
 /**
+ * this function checks if entered file during the firstChar condition is valid
+ * @param id id corresponding to the file row
+ * @param type type of the character being checked
+ * @param isFirstChar tells if its the first char of the row
+ * @param seenSpace tells if space has been seen
+ * @param afterFirstChar tells if if there has been at least one character after a space
+ * @return void
+ */
+
+void firstCharCheck(int id, SubjectType type, bool* isFirstChar, bool* seenSpace, bool* afterFirstChar) {
+    if (id == 0 && type != UniverseType) {
+        fprintf(stderr, "The first character should specify a universe type!\n");
+        exit(1);
+    }
+
+    *isFirstChar = false;
+    *seenSpace = false;
+    *afterFirstChar = true;
+}
+
+/**
+ * this function checks if entered file during the endLine condition
+ * @param type type of the character being checked
+ * @param wasUniverseSet tells if universe was already set
+ * @param wasCommandSet tells if command was already set
+ * @param wasRelationSet tells if relation was already set
+ * @param wasSetSet tells if set was already set
+ * @param universe universe from the file
+ * @param string string to convert the growstring from input to
+ * @return void
+ */
+
+void endLineCharacterCheck(SubjectType type, bool* wasUniverseSet, bool* wasCommandSet, bool* wasRelationSet, bool* wasSetSet, Universe* universe, char* string) {
+    if (type == UniverseType) {
+        if (*wasUniverseSet) {
+            destroyUniverse(universe);
+            free(string);
+            fprintf(stderr, "Universe was already specified!\n");
+            exit(1);
+        }
+        *wasUniverseSet = true;
+    }
+    if (type == SetType) {
+        if (!(*wasUniverseSet) || *wasCommandSet) {
+            fprintf(stderr, "non valid argument order!\n");
+            exit(1);
+        }
+        *wasSetSet = true;
+    }
+
+    if (type == RelationType) {
+        if (!(*wasUniverseSet) || *wasCommandSet) {
+            fprintf(stderr, "non valid argument order!\n");
+            exit(1);
+        }
+        *wasRelationSet = true;
+    }
+
+    if (type == CommandType) {
+        *wasCommandSet = true;
+    }
+}
+
+/**
+ * this function checks if entered file during the else condition
+ * @param character character that tells what type is being specified
+ * @param seenSpace tells if space has been seen
+ * @param afterFirstChar tells if if there has been at least one character after a space
+ * @param count tells how long the input string is
+ * @return void
+ */
+
+void parseFileElseCheck(char character, bool* seenSpace, bool* afterFirstChar, int* count) {
+    if (character == ' ')
+    {
+        *seenSpace = true;
+        *afterFirstChar = false;
+    }
+    else if (*seenSpace) {
+        (*count)++;
+        *seenSpace = false;
+    }
+
+    if (*afterFirstChar) {
+        syntaxCrash();
+    }
+}
+
+/**
+ * this function checks if entered file during the end of the function
+ * @param growSubjLength the length of the grow subject
+ * @param gsubj pointer to the growSubject variable
+ * @param wasCommandSet tells if command has been set
+ * @param wasRelationSet tells if relation has been set
+ * @param wasSetSet tells if set has been set
+ * @return void
+ */
+
+void parseFileEndCheck(int growSubjLength, GrowSubj* gsubj, bool wasCommandSet, bool wasRelationSet, bool wasSetSet) {
+    if (growSubjLength == 1 && gsubj[0].content->universe_p != NULL) {
+        fprintf(stderr, "Only universe has been specified!\n");
+        exit(1);
+    }
+
+    if (!wasCommandSet) {
+        fprintf(stderr, "no command specified!\n");
+        exit(1);
+    }
+
+    if (!wasRelationSet && !wasSetSet) {
+        fprintf(stderr, "no set or relation!\n");
+        exit(1);
+    }
+}
+
+/**
  * Parses the intire file into subjects. Calls many helper functions
  * @param filepath path to file that will be parsed.
  * @param subjc The count of subjects in subjv
@@ -680,6 +796,7 @@ void parseFile(char* filePath)
 
     if (file == NULL) {
         fprintf(stderr, "no file given!\n");
+        exit(1);
     }
     // read current charatcter while not at the end of the file
     while ((character = getc(file)) != EOF)
@@ -693,48 +810,15 @@ void parseFile(char* filePath)
             gstr = growStrCreate();
             type = setType(character);
 
-            if (id == 0 && type != UniverseType) {
-                printf("specified type: %d count: %d\n", type, count);
-                fprintf(stderr, "The first character should specify a universe type!\n");
-                exit(1);
-            }
-
-            isFirstChar = false;
-            seenSpace = false;
-            afterFirstChar = true;
+            firstCharCheck(id, type, &isFirstChar, &seenSpace, &afterFirstChar);
             continue;
         }
-        // if endline is reached
-        // store the whole string into the string variable
-        // call the parsline function with it
-        // free the old references and create new growStr
 
         else if (character == '\n')
         {
             string = growStrConvertToStr(gstr);
 
-            if (type == UniverseType) {
-                wasUniverseSet = true;
-            }
-            if (type == SetType) {
-                if (!wasUniverseSet || wasCommandSet) {
-                    fprintf(stderr, "non valid argument order!\n");
-                    exit(1);
-                }
-                wasSetSet = true;
-            }
-
-            if (type == RelationType) {
-                if (!wasUniverseSet || wasCommandSet) {
-                    fprintf(stderr, "non valid argument order!\n");
-                    exit(1);
-                }
-                wasRelationSet = true;
-            }
-
-            if (type == CommandType) {
-                wasCommandSet = true;
-            }
+            endLineCharacterCheck(type, &wasUniverseSet, &wasCommandSet, &wasRelationSet, &wasSetSet, universe, string);
 
             growSubjAdd(gsubj, parseLine(id, count, string, type, universe, gsubj));
             growSubjLength++;
@@ -747,20 +831,7 @@ void parseFile(char* filePath)
         }
         else
         {
-            if (character == ' ')
-            {
-                seenSpace = true;
-                afterFirstChar = false;
-            }
-            else if (seenSpace) {
-                count++;
-                seenSpace = false;
-            }
-
-            if (afterFirstChar) {
-                syntaxCrash();
-            }
-
+            parseFileElseCheck(character, &seenSpace, &afterFirstChar, &count);
             growStrAdd(gstr, character);
             //printf("Element %c added\n", character);
             //printf("%s\n", gstr->content);
@@ -770,20 +841,7 @@ void parseFile(char* filePath)
 
     //  Send the line into a processing fucntion. (Returns Subject)
     // parseLine();
-    if (growSubjLength == 1 && gsubj[0].content->universe_p != NULL) {
-        fprintf(stderr, "Only universe has been specified!\n");
-        exit(1);
-    }
-
-    if (!wasCommandSet) {
-        fprintf(stderr, "no command specified!\n");
-        exit(1);
-    }
-
-    if (!wasRelationSet && !wasSetSet) {
-        fprintf(stderr, "no set or relation!\n");
-        exit(1);
-    }
+    parseFileEndCheck(growSubjLength, gsubj, wasCommandSet, wasRelationSet, wasSetSet);
 
     //free(gsubj->content[0].set_p);
     //destroyUniverse(universe);
