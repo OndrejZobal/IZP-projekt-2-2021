@@ -173,11 +173,6 @@ void splitStringIntoPairs(char* string, int size, char** array) {
     }
 }
 
-
-
-
-
-
 /**
  * this function tells, if universum contains longer element than it should
  * @param string string to check
@@ -408,6 +403,16 @@ int parseInt(char* str, bool* err) {
     return atoi(str);
 }
 
+/**
+ * A fucntion for carring out operations on relations
+ * @param id ID of the line.
+ * @param cmdWord the string representing the command alias
+ * @param arg1 The line first supplied line number parsed as int.
+ * @param arg2 The line first supplied line number parsed as int.
+ * @param arg3 The line first supplied line number parsed as int.
+ * @param subjects The list of all subjects processed so far
+ * @return A processed subject
+ */
 Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int arg3, Subject* subjects) {
 
     if (arg2 == -1 && arg3 == -1) {
@@ -473,6 +478,15 @@ Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int a
     return createEmptySubject(0);
 }
 
+/**
+ * A fucntion for carring out operations on Sets
+ * @param id ID of the line.
+ * @param cmdWord the string representing the command alias
+ * @param arg1 The line first supplied line number parsed as int.
+ * @param arg2 The line first supplied line number parsed as int.
+ * @param subjects The list of all subjects processed so far
+ * @return A processed subject
+ */
 Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects) {
     if (arg2 == -1) {
         if (!strcmp(cmdWord, CMD_EMPTY)) {
@@ -518,6 +532,14 @@ Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* s
     return createEmptySubject(0);
 }
 
+/**
+ * A fucntion for carring out operations. Either processSetCommand or processRelationCommand
+ * @param id ID of the line.
+ * @param size Count of the words in contentString
+ * @param contentString Argumenty v podobě stryngu.
+ * @param subjects The list of all subjects processed so far
+ * @return A processed subject
+ */
 Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
     if (size < 2 || size > 4) {
         argCrash(id);

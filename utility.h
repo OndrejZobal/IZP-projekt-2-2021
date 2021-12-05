@@ -38,6 +38,9 @@ void invalidCommandCrash(int index, char* command){
     exit(1);
 }
 
+/**
+ * Prints a boolean value as a word
+ * @param boolean A boolean value to be printed */
 void printBool(int boolean){
     if (boolean != 0 && boolean != 1){
         fprintf(stderr, "Boolean oparation resulted in nonbinary output: \"%d\"!\n", boolean);
@@ -46,6 +49,11 @@ void printBool(int boolean){
     printf("%s\n", (boolean == 1) ? "true" : "false");
 }
 
+/**
+ * Frees an array of strings
+ * @param strings an array of strings
+ * @param size the number of strings in the array.
+ */
 void freeString(char** strings, int size){
     for (int i = 0; i < size; i++){
         free(strings[i]);
