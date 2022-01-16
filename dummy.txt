@@ -1,7 +1,7 @@
 U a b c x y z
 S a b c x
 S x y z
-R (a b) (a c) (a a)
+R (a b) (a c) (a a) (a x)
 S
 C empty 2
 C card 3
@@ -30,3 +30,6 @@ C codomain 4
 C injective 4 2 3
 C surjective 4 2 3
 C bijective 4 2 3
+C closure_trans 4
+C closure_sym 4
+C closure_ref 4
