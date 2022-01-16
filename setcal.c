@@ -12,19 +12,1344 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
-#include "utility.h"
-#include "structs.h"
-#include "growstr.c"
-#include "growsubj.c"
-#include "Commands/isInSet.h"
-#include "Commands/areSetsEqual.h"
-#include "Commands/relationCommandsUnary.h"
-#include "Commands/setCommandsUnary.h"
-#include "Commands/setCommandsBinary.h"
-#include "Commands/commandWords.h"
 
+// input constraints
 #define MAX_INPUT_FILE_ROWS 999
 #define MAX_ROW_ELEMENT_SIZE 30
+
+// Set commands
+#define CMD_EMPTY "empty"
+#define CMD_CARD "card"
+#define CMD_COMPLEMENT "complement"
+#define CMD_UNION "union"
+#define CMD_INTERSECT "intersect"
+#define CMD_MINUS "minus"
+#define CMD_SUBSETEQ "subseteq"
+#define CMD_SUBSET "subset"
+#define CMD_EQUALS "equals"
+
+// GROWSTR constants
+#define GROWSTR_DEFAULT_SIZE 10
+#define GROWSTR_SIZE_MULTIPLIER 10
+#define GROWSTR_OK 0
+#define GROWSTR_ERR 1
+
+// Relation commands
+#define CMD_REFLEXIVE "reflexive"
+#define CMD_SYMMETRIC "symmetric"
+#define CMD_ANTISYMMETRIC "antisymmetric"
+#define CMD_TRANSITIVE "transitive"
+#define CMD_FUNCTION "function"
+#define CMD_DOMAIN "domain"
+#define CMD_CODOMAIN "codomain"
+#define CMD_INJECTIVE "injective"
+#define CMD_SURJECTIVE "surjective"
+#define CMD_BIJECTIVE "bijective"
+
+// Relations Bonus
+#define CMD_CLOSURE_REF "closure_ref"
+#define CMD_CLOSURE_SYM "closure_sym"
+#define CMD_CLOSURE_TRANS "closure_trans"
+#define CMD_SELECT "select"
+
+typedef struct
+{
+    int id;
+    int size;
+    char** content;
+} Universe;
+
+typedef enum
+{
+    SetType,
+    RelationType,
+    UniverseType,
+    CommandType,
+} SubjectType;
+
+typedef struct
+{
+    int x;
+    int y;
+} Pair;
+
+typedef struct
+{
+    int id;
+    int size;
+    Pair* pairs;
+} Relation;
+
+typedef struct
+{
+    int id;
+    int size;
+    int* content;
+} Set;
+
+typedef struct
+{
+    int id;
+    Set* set_p;
+    Relation* relation_p;
+    Universe* universe_p;
+    SubjectType subjectType;
+
+} Subject;
+
+typedef struct growSubj {
+    // Current length of the string.
+    int length;
+    // Size of allocated memroy for the string.
+    int size;
+    // Subject storing the content.
+    Subject* content;
+} GrowSubj;
+
+
+typedef struct growStr
+{
+    // Current length of the string.
+    int length;
+    // Size of allocated memroy for the string.
+    int size;
+    // String storing the content.
+    char* content;
+} GrowStr;
+
+
+int isInSet(int element, Set *set);
+bool subseteq(Set *s1, Set *s2);
+int subset(Set *s1, Set *s2);
+int areSetsEqual(Set *s1, Set *s2);
+Set* constructEmptySet(int size);
+void memoryCrash();
+Pair createPair(int x, int y);
+void destroyPair(Pair* pair);
+void destroyUniverse(Universe* universe);
+void printPair(Universe universe, Pair pair);
+Set *getComplement(Set *set, int universeSize);
+Relation* CreateRelation(int id, int size, Pair* content);
+int areSetsEqual(Set *s1, Set *s2);
+void destroyRelation(Relation* relation);
+Set createSet(int id, int size, int* content);
+void destroySet(Set* set);
+int getItemIndex(Universe* universe, char* word);
+char* getItemName(Universe universe, int index);
+void printUniverse(Universe universe);
+Subject createSubjectFromSet(Set set);
+Subject createSubjectFromSetPtr(Set* set);
+Subject createSubjectFromRelationPtr(Relation* rel);
+Subject createEmptySubject(int id);
+void destroySubject(Subject* subject);
+void printSet(Universe universe, Set set);
+void printRelation(Universe universe, Relation rel);
+void printSubject(Universe universe, Subject subject);
+GrowStr* growStrCreate();
+int growStrAdd(GrowStr* growstr, char ch);
+char* growStrConvertToStr(GrowStr* growstr);
+GrowSubj* growSubjCreate();
+void growSubjAdd(GrowSubj* growstr, Subject subj);
+void destroyGrowSubj(GrowSubj* growsubj);
+Subject* growSubjConvertToArray(GrowSubj* growstr);
+void ioCrash(char *path);
+void syntaxCrash();
+void argCrash(int index);
+void nanCrash(int line, char* nan);
+void invalidCommandCrash(int index, char* command);
+void printBool(int boolean);
+void freeString(char** strings, int size);
+int isEmpty(Set *set);
+int card(Set *set);
+Set *setUnion(Set *s1, Set *s2);
+Set *minus(Set *s1, Set *s2);
+Set *intersect(Set *s1, Set *s2);
+Relation* constructEmptyRelation(int size);
+void reallocRelationToFit(Relation* relation, int newSize);
+void reallocSetToFit(Set* set, int newSize);
+void cloneRelation(Relation* from, Relation* to);
+bool isInRelation(Pair pair, Relation *relation);
+int isReflexive(Relation *relation, int universeSize);
+bool isSymmetric(Relation *relation);
+bool isAntisymmetric(Relation *relation);
+int isTransitive(Relation *relation);
+bool isFunction(Relation *relation);
+Set* domain(Relation *relation);
+Set* codomain(Relation *relation);
+Relation* reflexiveClosure(Relation* relation, int universeSize);
+Relation* symmetricClosure(Relation* relation);
+Relation* transitiveClosure(Relation* relation);
+bool isInjective(Relation* relation, Set* s1, Set* s2);
+bool isSurjective(Relation* relation, Set* s1, Set* s2);
+bool isBijective(Relation* relation, Set* s1, Set* s2);
+int selectSet(Set* set);
+Pair selectRelation(Relation* relation);
+void splitStringintoArray(char* string, char** array, int size, char* delimiter);
+void removeChar(char* str, char charToRemove);
+bool hasSymbols(char** content, int size);
+bool hasNumbers(char** content, int size);
+bool hasCommandName(char** content, int size);
+bool checkValidContent(char** content, int size);
+void splitStringIntoPairs(char* string, int size, char** array);
+bool hasMoreThanMaxSize(char* string);
+bool hasRepeatingPairs(Pair* pairs, int size);
+Relation* relationCreate(int id, int size, char* contentString, Universe* universe);
+bool hasRepeatingElement(int* intContent, int size);
+Set* setCreate(int id, int size, char* contentString, Universe* universe);
+Universe* universeCreate(int id, int size, char* contentString);
+int parseInt(char* str, bool* err);
+Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int arg3, Subject* subjects);
+Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* subjects);
+Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj);
+Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe, GrowSubj* gsubj);
+SubjectType setType(char character);
+void parseFile(char* filePath);
+char* readFilePath(int argc, char** argv);
+void parseFileEndCheck(int growSubjLength, GrowSubj* gsubj, bool wasCommandSet, bool wasRelationSet, bool wasSetSet);
+void parseFileElseCheck(char character, bool* seenSpace, bool* afterFirstChar, int* count);
+void endLineCharacterCheck(SubjectType type, bool* wasUniverseSet, bool* wasCommandSet, bool* wasRelationSet, bool* wasSetSet, Universe* universe, char* string);
+void firstCharCheck(int id, SubjectType type, bool* isFirstChar, bool* seenSpace, bool* afterFirstChar);
+
+
+/**
+ * returns true if s1 is a subset of s2 (unless they are equal)
+ * @param s1 set1
+ * @param s2 set2
+ * @return true or false
+ */
+
+int subset(Set *s1, Set *s2){
+    if(areSetsEqual(s1, s2)){
+        return 0;
+    }
+    else{
+        return subseteq(s1, s2);
+    }
+}
+
+/**
+ * returns true if element is in set
+ * @param element the element we are looking for
+ * @param set the set we are searching
+ * @return
+ */
+
+int isInSet(int element, Set *set){
+    for (int i = 0; i < set->size; ++i) {
+        if(element == set->content[i]){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/**
+ * A constructor for the a Set that is empty.
+ * All values will be set to -1 and id to 0.
+ * @param size The size of the content.
+ * @return A brand new set
+ */
+Set* constructEmptySet(int size) {
+    Set* set;
+    set = malloc(sizeof(Set));
+    set->id = 0;
+    set->size = size;
+    if(size == 0){
+        set->content = NULL;
+        return set;
+    }
+    int* list = malloc(size * sizeof(int));
+    if(size != 0){
+        for (int i = 0; i < size; i++) {
+            list[i] = -1;
+        }
+    }
+    set->content = list;
+    return set;
+}
+
+/**
+ * returns true if s1 is a subset of s2
+ * @param s1 set1
+ * @param s2 set2
+ * @return true or false
+ */
+bool subseteq(Set *s1, Set *s2){
+    if(s1->size == 0){
+        return true;
+    }
+    for (int i = 0; i < s1->size; ++i) {
+        if(!isInSet(s1->content[i], s2)){
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * exits the program if there is an issue with memory allocation
+ */
+void memoryCrash(){
+    fprintf(stderr, "Failed to allocate memory on the machine. The program cannot continue!\n");
+    exit(1);
+}
+
+/**
+ * A constructor for the Pair type.
+ * @param x The first part of the pair.
+ * @param y The second part of the pair.
+ * @return Brand new pair.
+ */
+Pair createPair(int x, int y) {
+    Pair pair;
+    pair.x = x;
+    pair.y = y;
+    return pair;
+}
+
+/**
+ * A destructor for the Pair type.
+ * @param pair The pair to be destroied.
+ */
+void destroyPair(Pair* pair) {
+    free(pair);
+}
+
+
+/**
+ * A destructor for the Universe type.
+ * @param universe The universe that will be destroied.
+ */
+void destroyUniverse(Universe* universe) {
+    for (int i = 0; i < universe->size; i++) {
+        free(universe->content[i]);
+    }
+    free(universe->content);
+    free(universe);
+}
+
+
+/**
+ * Printing the Pair according to the specification.
+ * @param universe Universe in wich the pair exists.
+ * @param pair The pair you want to print.
+ */
+void printPair(Universe universe, Pair pair) {
+    printf("(%s %s)", universe.content[pair.x], universe.content[pair.y]);
+}
+
+/**
+ * returns the complement of set, compared to universe
+ * @param set the we want the complement of
+ * @param universeSize how many elements are in the universe
+ * @return Set that is a complement of set
+ */
+Set *getComplement(Set *set, int universeSize) {
+    int complementCurrentLength = 0; // how many elements in complement already have a value
+    Set *complement = constructEmptySet(universeSize - set->size);
+
+    for (int i = 0; i < universeSize; i++) {
+        if(!isInSet(i, set)){
+            complement->content[complementCurrentLength] = i;
+            complementCurrentLength++;
+        }
+    }
+    return complement;
+}
+
+/**
+ * Printing the Pair according to the specification.
+ * @param universe Universe in wich the pair exists.
+ * @param pair The pair you want to print.
+ */
+Relation* CreateRelation(int id, int size, Pair* content) {
+    if (content == NULL && size != 0) {
+        content = malloc(sizeof(Pair) * size);
+    }
+    Relation* relation = malloc(sizeof(Relation));
+
+    if (content == NULL || relation == NULL) {
+        memoryCrash();
+    }
+
+    relation->id = id;
+    relation->size = size;
+    relation->pairs = content;
+    return relation;
+}
+
+/**
+ * returns true if sets are equal
+ * @param s1 set1
+ * @param s2 set2
+ * @return true or false
+ */
+int areSetsEqual(Set *s1, Set *s2){
+    if(s1->size != s2->size){
+        return 0;
+    }
+
+    for (int i = 0; i < s1->size; ++i) {
+        if(!isInSet(s1->content[i], s2)){
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/**
+ * A destructor for the Relation type.
+ * @param relation The that will be destroyed.
+ */
+void destroyRelation(Relation* relation) {
+    free(relation->pairs);
+    free(relation);
+}
+
+/**
+ * A constructor for the Set type.
+ * @param id The id of the set.
+ * @param size The amount of numbers in the content.
+ * @param content The list of the numbers in the set.
+ * @return A brand new set
+ */
+Set createSet(int id, int size, int* content) {
+    Set set = { .id = id, .size = size, .content = content };
+
+    return set;
+}
+
+
+/**
+ * A destructor for the Set type.
+ * @param set The set that will be destroied.
+ */
+void destroySet(Set* set) {
+    free(set->content);
+    free(set);
+}
+
+/**
+ * This functin translates words into their numeric
+ * representation.
+ * @param universe Universe to translate from
+ * @param the string to be translated.
+ * @return Numeric representation of the word.
+ */
+int getItemIndex(Universe* universe, char* word) {
+    for (int i = 0; i < universe->size; i++) {
+        if (!strcmp(word, universe->content[i])) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/**
+ * Translates numeric values back to strings using
+ *the universe.
+ * @param universe The univers used to translate the number.
+ * @param index The numeric value that will be translated.
+ * @return A string representation of "index".
+ */
+char* getItemName(Universe universe, int index) {
+    return universe.content[index];
+}
+
+/**
+ * Prints the universe according to the specification.
+ * @param universe The universe you want to print.
+ */
+void printUniverse(Universe universe) {
+    printf("U");
+    for (int i = 0; i < universe.size; i++) {
+        printf(" %s", universe.content[i]);
+    }
+    printf("\n");
+}
+/**
+ * Encapsulate set in a subject
+ * @param set The set you would like to encapsulate.
+ * @return The subject with the set in it.
+ */
+Subject createSubjectFromSet(Set set) {
+    // Copy the set to heap.
+    Set* set_p = malloc(sizeof(Set));
+    *set_p = set;
+
+    Subject subj = { .id = set.id, .set_p = set_p, .subjectType = SetType };
+    return subj;
+}
+
+/**
+ * Encapsulate set in a subject using a pointer.
+ * @param set The set pointer you would like to encapsulate.
+ * @return The subject with the set in it.
+ */
+Subject createSubjectFromSetPtr(Set* set) {
+    // Copy the set to heap.
+    Subject subj = { .id = set->id, .set_p = set, .subjectType = SetType };
+    return subj;
+}
+
+/**
+ * Encapsulate relation in a subject using a pointer.
+ * @param set The set pointer you would like to encapsulate.
+ * @return The subject with the set in it.
+ */
+Subject createSubjectFromRelationPtr(Relation* rel) {
+    // Copy the relation to heap.
+    Subject subj = { .id = rel->id, .relation_p = rel, .subjectType = RelationType };
+    return subj;
+}
+
+
+/**
+ * Create a subject with nothing in it.
+ * @param id id of the subject.
+ * @return a new subject instance.
+ */
+Subject createEmptySubject(int id) {
+    Subject subj = { .id = id, .subjectType = CommandType };
+    return subj;
+}
+
+/**
+ * A destructor for the Subject type.
+ * @param subject The that will be destroied.
+ */
+void destroySubject(Subject* subject) {
+    switch (subject->subjectType) {
+        case SetType:
+            destroySet(subject->set_p);
+            break;
+        case RelationType:
+            destroyRelation(subject->relation_p);
+            break;
+        case UniverseType:
+            destroyUniverse(subject->universe_p);
+            destroySet(subject->set_p);
+            break;
+        case CommandType:
+            if (subject->set_p != NULL){
+                destroySet(subject->set_p);
+            }
+            if (subject->relation_p != NULL){
+                destroyRelation(subject->relation_p);
+            }
+
+        default:
+            break;
+    }
+}
+
+/**
+ * Prints the set according to the specification.
+ * @param universe The universe you want to print.
+ * @param set The set that will be printed out
+ */
+void printSet(Universe universe, Set set) {
+    printf("S");
+    for (int i = 0; i < set.size; i++) {
+        if (set.content[i] == -1) {
+            continue;
+        }
+        printf(" %s", universe.content[set.content[i]]);
+    }
+    printf("\n");
+}
+
+/**
+ * Prints the relation according to the specification.
+ * @param universe The universe you want to print.
+ * @param rel The set that will be printed out
+ */
+void printRelation(Universe universe, Relation rel) {
+    printf("R");
+    for (int i = 0; i < rel.size; i++) {
+        printf(" ");
+        printPair(universe, rel.pairs[i]);
+    }
+    printf("\n");
+}
+
+/**
+ * Prints the subject according to the specification.
+ * @param universe The universe you want to print.
+ * @param subject The set that will be printed out
+ */
+void printSubject(Universe universe, Subject subject) {
+    switch (subject.subjectType) {
+        case SetType:
+            printSet(universe, *subject.set_p);
+            break;
+        case RelationType:
+            printRelation(universe, *subject.relation_p);
+            break;
+        case UniverseType:
+            printUniverse(universe);
+            break;
+        default:
+            break;
+    }
+}
+
+/**
+ * This function creates a new instance of GrowString
+ * @return An empty GrowStr
+ */
+GrowStr* growStrCreate()
+{
+    // Allocating the string array
+    char* content = malloc(sizeof(char) * GROWSTR_DEFAULT_SIZE);
+    GrowStr* gs = malloc(sizeof(GrowStr));
+
+    if (content == NULL || gs == NULL)
+    {
+        return NULL;
+    }
+
+    // Cleaning the String.
+    content[0] = '\0';
+
+    // Assigning the values of the new GrowStr instance.
+    gs->length = 0;
+    gs->size = GROWSTR_DEFAULT_SIZE;
+    gs->content = content;
+
+    return gs;
+}
+
+/**
+ * Adds a new character into an existing GrowStr instance.
+ * @return GROWSTR_OK if successful and GROWSTR_ERR if the character could not
+ *be added.
+ * @param growstr GrowStr to be added into
+ * @param ch Character that will be added into the growstring
+ * @return GROWSTR_ERR on if the appending was unsuccessful, otherwise
+ *GROWSTR_OK.
+ */
+int growStrAdd(GrowStr* growstr, char ch)
+{
+    // Checking if the string is large enough for another char to be added to it
+    // (accounts for terminator).
+    if (growstr->length + 1 > growstr->size - 1)
+    {
+        // Reallocating the array.
+        char* buffer = NULL;
+        // To make the need for reallocation less frequent the new string size will
+        // be multiplied by a constant.
+        int newSize = growstr->size * GROWSTR_SIZE_MULTIPLIER;
+        buffer = (char*)realloc(growstr->content, newSize * sizeof(char));
+        if (buffer == NULL)
+        {
+            return GROWSTR_ERR;
+        }
+        growstr->content = buffer;
+        growstr->size = newSize;
+    }
+
+    // Adding the new char.
+    growstr->content[growstr->length++] = ch;
+    growstr->content[growstr->length] = '\0';
+    return GROWSTR_OK;
+}
+
+/**
+ * This function destroys the growstring and returns you an optimized string.
+ * The Growstr is no longer valid after calling this.
+ * @param growstr GrowStr that will be converted to string
+ * @return content of growstr
+ */
+char* growStrConvertToStr(GrowStr* growstr)
+{
+    char* str = malloc(sizeof(char) * growstr->length+1);
+    if (str == NULL)
+    {
+        printf("SUSUS hella susu :flushed:");
+        exit(1);
+    }
+    for (int i = 0; i < growstr->length+1; i++)
+    {
+        str[i] = growstr->content[i];
+    }
+
+    free(growstr->content);
+    free(growstr);
+    return str;
+}
+
+
+/**
+ * This function creates a new instance of GrowSubj
+ * @return An empty GrowSubj
+ */
+GrowSubj* growSubjCreate() {
+    // Allocating the string array
+    Subject* content = malloc(sizeof(Subject) * GROWSTR_DEFAULT_SIZE);
+    GrowSubj* gs = malloc(sizeof(GrowSubj));
+
+    if (content == NULL || gs == NULL) {
+        return NULL;
+    }
+
+    // Assigning the values of the new GrowSubj instance.
+    gs->length = 0;
+    gs->size = GROWSTR_DEFAULT_SIZE;
+    gs->content = content;
+
+    return gs;
+}
+
+/**
+ * Adds a new Subjectacter into an exsiting GrowSubj instance.
+ * @return GROWSTR_OK if successfull and GROWSTR_ERR if the Subjectacter could not
+ *be added.
+ * @param growstr GrowSubj to be added into
+ * @param subj Subjectacter that will be added into the growstring
+ *GROWSTR_OK.
+ */
+void growSubjAdd(GrowSubj* growstr, Subject subj) {
+    // Checking if the string is large enough for another Subject to be added to it
+    // (accounts for terminator).
+    if (growstr->length + 1 > growstr->size) {
+        // Reallocating the array.
+        Subject* buffer = NULL;
+        // To make the need for reallocation less frewquent the new string size will
+        // be multiplied by a constant.
+        int newSize = growstr->size * GROWSTR_SIZE_MULTIPLIER;
+        buffer = realloc(growstr->content, newSize * sizeof(Subject));
+        if (buffer == NULL) {
+            memoryCrash();
+        }
+
+        growstr->content = buffer;
+        growstr->size = newSize;
+    }
+
+    // Adding the new Subject.
+    growstr->content[growstr->length++] = subj;
+}
+
+/**
+ * frees the growsubject
+ * @param growsubj the growsubject to be freed
+ */
+void destroyGrowSubj(GrowSubj* growsubj) {
+    for (int i = 0; i < growsubj->length; i++) {
+        destroySubject(&growsubj->content[i]);
+    }
+    free(growsubj->content);
+    free(growsubj);
+}
+
+/**
+ * This function destroys the growstring and returns you an optimized string.
+ * The Growstr is no longer valid after calling this.
+ * @param growstr GrowSubj that will be converted to string
+ * @return content of growstr
+ */
+Subject* growSubjConvertToArray(GrowSubj* growstr) {
+    Subject* str = malloc(sizeof(Subject) * growstr->length);
+    if (str == NULL) {
+        memoryCrash();
+    }
+
+    for (int i = 0; i < growstr->length; i++) {
+        str[i] = growstr->content[i];
+    }
+
+    destroyGrowSubj(growstr);
+    return str;
+}
+
+/**
+ * exits the program if it fails to read from the input file
+ * @param path the path to the file
+ */
+void ioCrash(char *path) {
+    if (path == NULL){
+        fprintf(stderr, "Failed to manipulate with file!\n");
+        exit(1);
+    }
+
+    fprintf(stderr, "Failed to manipulate with file: \"%s\"!\n", path);
+    exit(1);
+}
+
+/**
+ * exists the program if input file contains invalid instructions
+ */
+void syntaxCrash() {
+    fprintf(stderr, "Invalid syntax in instruction file. The program cannot continue!\n");
+    exit(1);
+}
+
+/**
+ * exits the program if the line contains invalid parameters
+ * @param index the index of the line which contains invalid parameters
+ */
+void argCrash(int index) {
+    fprintf(stderr, "Line %d has invalid parameters!", index + 1);
+    syntaxCrash();
+}
+
+/**
+ * exits the program if command argument is not a number
+ * @param line the line which contains the invalid argument
+ * @param nan the char which was supposed to be a number
+ */
+void nanCrash(int line, char* nan) {
+    fprintf(stderr, "On line %d there was supposed to be a line number, instead got \"%s\"!\n", line, nan);
+    syntaxCrash();
+}
+
+/**
+ * exits the program if the operation is called with invalid inputs
+ * @param index the index of the operation
+ * @param command the command name
+ */
+void invalidCommandCrash(int index, char* command) {
+    fprintf(stderr, "\"%s\" is not a valid operation for given inputs! Line %d!\n", command, index + 1);
+    exit(1);
+}
+
+/**
+ * prints the boolean value as a word
+ * @param boolean A boolean value to be printed
+ */
+void printBool(int boolean){
+    if (boolean != 0 && boolean != 1){
+        fprintf(stderr, "Boolean operation resulted in nonbinary output: \"%d\"!\n", boolean);
+        exit(1);
+    }
+    printf("%s\n", (boolean == 1) ? "true" : "false");
+}
+
+/**
+ * Frees an array of strings
+ * @param strings an array of strings
+ * @param size the number of strings in the array.
+ */
+void freeString(char** strings, int size){
+    for (int i = 0; i < size; i++){
+        free(strings[i]);
+    }
+}
+
+
+/**
+ * returns true if set size = 0
+ * @param set the set we are checking
+ * @return true or false
+ */
+int isEmpty(Set *set) {
+    return !set->size;
+}
+
+/**
+ * returns the number of elements in set
+ * @param set the set we want to know the size of
+ * @return the size of set
+ */
+int card(Set *set) {
+    return set->size;
+}
+
+
+/**
+ * returns the union of sets s1 and s2
+ * @param s1 Set
+ * @param s2 Set
+ * @return union of s1 and s2
+ */
+Set *setUnion(Set *s1, Set *s2) {
+    int unionSetSize = s1->size + s2->size;
+    Set *unionSet = constructEmptySet(unionSetSize);
+
+    int currentIndex = 0;
+    for (int i = 0; i < s1->size; ++i) {
+        unionSet->content[currentIndex] = s1->content[i];
+        currentIndex++;
+    }
+    for (int i = 0; i < s2->size; ++i) {
+        if(!isInSet(s2->content[i], unionSet)){
+            unionSet->content[currentIndex] = s2->content[i];
+            currentIndex++;
+        }
+    }
+    return unionSet;
+}
+
+/**
+ * returns the difference between s1 and s2
+ * @param s1 set1
+ * @param s2 the set that we are subtracting from set1
+ * @return
+ */
+
+Set *minus(Set *s1, Set *s2) {
+    Set *difference = constructEmptySet(s1->size);
+    int differenceCurrentLength = 0;
+    for (int i = 0; i < s1->size; i++) {
+        if(!isInSet(s1->content[i], s2)){
+            difference->content[differenceCurrentLength] = s1->content[i];
+            differenceCurrentLength++;
+        }
+    }
+    return difference;
+}
+
+
+
+
+/**
+ * returns the intersect Set of s1 and s2
+ * @param s1 set1
+ * @param s2 set2
+ * @return Set intersect of s1 and s2
+ */
+Set *intersect(Set *s1, Set *s2) {
+    int currentIntersectSetLength = 0;
+    Set *intersectSet;
+
+    intersectSet = constructEmptySet(s1->size);
+
+    for (int i = 0; i < s1->size; ++i) {
+        if(isInSet(s1->content[i], s2)){
+            intersectSet->content[currentIntersectSetLength] = s1->content[i];
+            currentIntersectSetLength++;
+        }
+    }
+    return intersectSet;
+}
+
+
+
+/**
+ *
+ * @param size size that should be allocated for the relation
+ * @return relation full of '-1'
+ */
+Relation* constructEmptyRelation(int size) {
+    Relation* relation = malloc(sizeof(Relation));
+    relation->id = 0;
+    relation->size = size;
+    if(relation->size == 0){
+        relation->pairs = NULL;
+        return relation;
+    }
+    relation->pairs = malloc(size * sizeof(Pair));
+    for (int i = 0; i < relation->size; ++i) {
+        relation->pairs[i].x = -1;
+        relation->pairs[i].y = -1;
+    }
+    return relation;
+}
+
+/**
+ * reallocates the relation so that it doesnt contain any "empty" pairs
+ * @param relation the relation to be reallocated
+ * @param newSize size of relation after reallocating
+ */
+void reallocRelationToFit(Relation* relation, int newSize) {
+    Pair* newPairs;
+    newPairs = realloc(relation->pairs, newSize*sizeof(Pair));
+    if(newPairs != NULL){
+        relation->size = newSize;
+        relation->pairs = newPairs;
+    }
+    else{
+        memoryCrash();
+    }
+}
+
+/**
+ * reallocs the set so that it doesnt contain any empty pairs
+ * @param set set to be reallocated
+ * @param newSize size of the reallocated set
+ */
+
+// TODO utility, it belongs to a completely different file
+
+void reallocSetToFit(Set* set, int newSize) {
+    int* newContent;
+    newContent = realloc(set->content, newSize * sizeof(int));
+    if(newContent != NULL){
+        set->size = newSize;
+        set->content = newContent;
+    }
+    else{
+        memoryCrash();
+    }
+}
+
+/**
+ * copies relation content
+ * @param from the relation to copy from
+ * @param to the relation to copy to
+ */
+
+void cloneRelation(Relation* from, Relation* to) {
+    for (int i = 0; i < from->size; ++i) {
+        to->pairs[i] = from->pairs[i];
+    }
+}
+
+/**
+ * returns true if pair is in relation
+ * @param pair the pair we are looking for in the relation
+ * @param relation the relation we are searching
+ * @return
+ */
+bool isInRelation(Pair pair, Relation *relation) {
+    for (int i = 0; i < relation->size; ++i) {
+        if(pair.x == relation->pairs[i].x && pair.y == relation->pairs[i].y){
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * returns true if the relation is reflexive on set Universe
+ * @param relation the relation we are checking
+ * @param universeSize how many elemnts does universe have
+ * @return true or false
+ */
+int isReflexive(Relation *relation, int universeSize) {
+    Pair reflexivePair;
+    for (int i = 0; i < universeSize; ++i) {
+        reflexivePair.x = i;
+        reflexivePair.y = i;
+        if(!isInRelation(reflexivePair, relation)){
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * returns true if relation is symmetric
+ * @param relation the relation we are checking
+ * @return true or false
+ */
+bool isSymmetric(Relation *relation) {
+    Pair flippedPair;
+    for (int i = 0; i < relation->size; ++i) {
+        if(relation->pairs[i].x == relation->pairs[i].y){
+            continue;
+        }
+        flippedPair.x = relation->pairs[i].y;
+        flippedPair.y = relation->pairs[i].x;
+        if(!isInRelation(flippedPair, relation)){
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * returns true if relation is antisymmetric
+ * @param relation the relation we are checking
+ * @return true or false
+ */
+bool isAntisymmetric(Relation *relation) {
+    Pair flippedPair;
+    for (int i = 0; i < relation->size; ++i) {
+        if(relation->pairs[i].x == relation->pairs[i].y){
+            continue;
+        }
+        flippedPair.x = relation->pairs[i].y;
+        flippedPair.y = relation->pairs[i].x;
+        if(isInRelation(flippedPair, relation)){
+            return false;
+        }
+    }
+    return true;
+}
+
+
+/**
+ * returns true if relation is transitive
+ * @param relation the relation we are checking
+ * @return true or false
+ */
+int isTransitive(Relation *relation) {
+    Pair gluedPair;
+    int glue;
+    for (int i = 0; i < relation->size; ++i) {
+        if(relation->pairs[i].x == relation->pairs[i].y){
+            continue;
+        }
+        glue = relation->pairs[i].y;
+        for (int j = 0; j < relation->size; ++j) {
+            if(relation->pairs[j].x == glue){
+                gluedPair.x = relation->pairs[i].x;
+                gluedPair.y = relation->pairs[j].y;
+                if(!isInRelation(gluedPair, relation)){
+                    return 0;
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+/**
+ * returns true if relation is a function
+ * @param relation the relation we are checking
+ * @return true or false
+ */
+bool isFunction(Relation *relation) {
+    int xValue;
+    int yValue;
+    for (int i = 0; i < relation->size; ++i) {
+        xValue = relation->pairs[i].x;
+        yValue = relation->pairs[i].y;
+        for (int j = 0; j < relation->size; ++j) {
+            if(relation->pairs[j].x == xValue){
+                if(relation->pairs[j].y != yValue){
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+/**
+ * returns the domain of relation
+ * @param relation the relation we want the domain of
+ * @return Set which contains domain elements of relation
+ */
+Set* domain(Relation *relation) {
+    int domainCurrentLength = 0;
+    Set *domainSet = constructEmptySet(relation->size);
+    if(domainSet->size == 0){
+        return domainSet;
+    }
+    for (int i = 0; i < relation->size; ++i) {
+        if(!isInSet(relation->pairs[i].x, domainSet)){
+            domainSet->content[domainCurrentLength] = relation->pairs[i].x;
+            domainCurrentLength++;
+        }
+    }
+    reallocSetToFit(domainSet, domainCurrentLength);
+    return domainSet;
+}
+
+/**
+ * returns the codomain of relation
+ * @param relation the relation we want the codomain of
+ * @return Set which contains codomain elements of relation
+ */
+Set* codomain(Relation *relation) {
+    int codomainCurrentLength = 0;
+    Set *codomainSet = constructEmptySet(relation->size);
+    if(codomainSet->size == 0){
+        return codomainSet;
+    }
+    for (int i = 0; i < relation->size; ++i) {
+        if(!isInSet(relation->pairs[i].y, codomainSet)){
+            codomainSet->content[codomainCurrentLength] = relation->pairs[i].y;
+            codomainCurrentLength++;
+        }
+    }
+    reallocSetToFit(codomainSet, codomainCurrentLength);
+    return codomainSet;
+}
+
+
+/**
+ * returns the reflexive closure of relation on universe set
+ * @param relation the relation we want the closure of
+ * @param universeSize how many elements are in universe
+ * @return the reflexive closure of relation
+ */
+
+Relation* reflexiveClosure(Relation* relation, int universeSize) {
+    Pair reflexivePair;
+    int refRelCurrentLength = relation->size;
+    Relation* reflexiveClosureRelation = constructEmptyRelation(relation->size + universeSize);
+    cloneRelation(relation, reflexiveClosureRelation);
+
+    for (int i = 0; i < universeSize; ++i) {
+        reflexivePair.x = i;
+        reflexivePair.y = i;
+        if(!isInRelation(reflexivePair, reflexiveClosureRelation)){
+            reflexiveClosureRelation->pairs[refRelCurrentLength] = reflexivePair;
+            refRelCurrentLength++;
+        }
+    }
+    reallocRelationToFit(reflexiveClosureRelation, refRelCurrentLength);
+    return reflexiveClosureRelation;
+}
+
+/**
+ * returns the symmetric closure of relation
+ * @param relation the relation we want the closure of
+ * @return the symmetric closure of relation
+ */
+Relation* symmetricClosure(Relation* relation) {
+    Pair symmetricPair;
+    int symRelCurrentLength = relation->size;
+    Relation* symmetricClosureRelation = constructEmptyRelation(relation->size * 2);
+    cloneRelation(relation, symmetricClosureRelation);
+
+    for (int i = 0; i < relation->size; ++i) {
+        symmetricPair.x = symmetricClosureRelation->pairs[i].y;
+        symmetricPair.y = symmetricClosureRelation->pairs[i].x;
+        if(!isInRelation(symmetricPair, symmetricClosureRelation)){
+            symmetricClosureRelation->pairs[symRelCurrentLength] = symmetricPair;
+            symRelCurrentLength++;
+        }
+    }
+    reallocRelationToFit(symmetricClosureRelation, symRelCurrentLength);
+    return symmetricClosureRelation;
+}
+
+/**
+ * returns the transitive closure of relation
+ * @param relation the relation we want the closure of
+ * @return the transitive closure of relation
+ */
+Relation* transitiveClosure(Relation* relation) {
+    Pair gluedPair;
+    int glue;
+    int transRelCurrentLength = relation->size;
+    Relation* transClosureRelation = constructEmptyRelation(relation->size * relation->size);
+    cloneRelation(relation, transClosureRelation);
+
+    for (int i = 0; i < transClosureRelation->size; ++i) {
+        if(transClosureRelation->pairs[i].x == transClosureRelation->pairs[i].y){
+            continue;
+        }
+        glue = transClosureRelation->pairs[i].y;
+        for (int j = 0; j < transClosureRelation->size; ++j) {
+            if(transClosureRelation->pairs[j].x == glue){
+                gluedPair.x = transClosureRelation->pairs[i].x;
+                gluedPair.y = transClosureRelation->pairs[j].y;
+                if(!isInRelation(gluedPair, transClosureRelation)){
+                    transClosureRelation->pairs[transRelCurrentLength] = gluedPair;
+                    transRelCurrentLength++;
+                }
+            }
+        }
+    }
+    reallocRelationToFit(transClosureRelation, transRelCurrentLength);
+    return transClosureRelation;
+}
+
+/**
+ * returns true if relation is an injective function on sets s1 and s2
+ * @param relation the relation we are checking
+ * @param s1 x values of the function
+ * @param s2 y values of the function
+ * @return true or false
+ */
+
+bool isInjective(Relation* relation, Set* s1, Set* s2) {
+    if(s1->size > s2->size){
+        return false;
+    }
+    if(!isFunction(relation)){
+        return false;
+    }
+    Set* domainSet = domain(relation);
+    if (!areSetsEqual(domainSet, s1)) {
+        destroySet(domainSet);
+        return false;
+    }
+    destroySet(domainSet);
+    for (int i = 0; i < relation->size; ++i) {
+        if (!isInSet(relation->pairs[i].y, s2)) {
+            return false;
+        }
+        for (int j = i+1; j < relation->size; ++j) {
+            if (relation->pairs[i].x == relation->pairs[j].x) {
+                return false;
+            }
+            if(relation->pairs[i].y == relation->pairs[j].y){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+/**
+ * returns true if relation is a surjective function on sets s1 and s2
+ * @param relation the relation we are checking
+ * @param s1 the x values of the function
+ * @param s2 the y values of the function
+ * @return true or false
+ */
+bool isSurjective(Relation* relation, Set* s1, Set* s2){
+    if(!isFunction(relation)){
+        return false;
+    }
+    Set *codomainSet = codomain(relation);
+    if(!areSetsEqual(codomainSet, s2)){
+        destroySet(codomainSet);
+        return false;
+    }
+    destroySet(codomainSet);
+    for (int i = 0; i < relation->size; ++i) {
+        if(!isInSet(relation->pairs[i].x, s1)){
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * returns true if relation is a bijective function on sets s1 and s2
+ * @param relation the relation we are checking
+ * @param s1 the x values of the function
+ * @param s2 the y values of the function
+ * @return true or false
+ */
+bool isBijective(Relation* relation, Set* s1, Set* s2) {
+    if(!isFunction(relation)){
+        return false;
+    }
+    if(isSurjective(relation, s1, s2) && isInjective(relation, s1, s2)){
+        return true;
+    }
+    return false;
+}
+
+/**
+ * returns a random element from set
+ * @param set the Set we want the random element from
+ * @return random set element
+ */
+
+int selectSet(Set* set) {
+    if(set->size == 0){
+        return -1;
+    }
+    int randomIndex = rand() % set->size;
+    return set->content[randomIndex];
+}
+
+/**
+ * returns a random Pair from relation
+ * @param relation the Relation we want the random Pair from
+ * @return random relation Pair
+ */
+
+Pair selectRelation(Relation* relation) {
+    Pair dummyPair = {.x = -1, .y = -1};
+    if(relation->size == 0){
+        return dummyPair;
+    }
+    int randomIndex = rand() % relation->size;
+    return relation->pairs[randomIndex];
+}
+
+
  // TODO UPDATE: Obsah univerza si budeme pamatovat a seznam položek budme používat jako slovník id, abychom si ušetřili porovnavani stringu.
 
 /**
@@ -173,8 +1498,9 @@ void splitStringIntoPairs(char* string, int size, char** array) {
     }
 }
 
+
 /**
- * this function tells, if universum contains longer element than it should
+ * this function tells, if universe contains longer element than it should
  * @param string string to check
  * @return return true if string is longer than max value
  */
@@ -224,8 +1550,6 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
     Pair* pairs = malloc(sizeof(Pair) * size);
     splitStringIntoPairs(contentString, size, content);
 
-
-
     for (int i = 0; i < size; i++) {
         char* helpArray[2];
         splitStringintoArray(content[i], helpArray, 2, " ");
@@ -238,7 +1562,6 @@ Relation* relationCreate(int id, int size, char* contentString, Universe* univer
             exit(1);
         }
         Pair pair = createPair(x, y);
-        //printf("pair x: %d pair y: %d\n", pair.x, pair.y);
         pairs[i] = pair;
 
         for (int i = 0; i < 2; i++) {
@@ -296,8 +1619,7 @@ bool hasRepeatingElement(int* intContent, int size) {
  * @return created set with specified values
  */
 
-Set* setCreate(int id, int size, char* contentString, Universe* universe)
-{
+Set* setCreate(int id, int size, char* contentString, Universe* universe) {
     // TODO: Need to check for duplicates in the set.
     int* intContent = malloc(sizeof(int) * size);
     char** content = malloc(sizeof(char*) * size);
@@ -330,12 +1652,6 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
     set->size = size;
     set->content = intContent;
 
-    /*
-    for (int i = 0; i < size; i++) {
-        printf("set content at index %d = %d\n", i, set->content[i]);
-    }
-    printf("*******\n");
-    */
     for (int i = 0; i < size; i++) {
         free(content[i]);
     }
@@ -351,8 +1667,7 @@ Set* setCreate(int id, int size, char* contentString, Universe* universe)
  * @return created universe with specified values
  */
 
-Universe* universeCreate(int id, int size, char* contentString)
-{
+Universe* universeCreate(int id, int size, char* contentString) {
     char** content = malloc(sizeof(char*) * size);
 
     splitStringintoArray(contentString, content, size, " ");
@@ -371,15 +1686,9 @@ Universe* universeCreate(int id, int size, char* contentString)
 
     Universe* universe = malloc(sizeof(Universe));
 
-
     universe->id = id;
     universe->size = size;
     universe->content = content;
-
-    for (int i = 0; i < size; i++) {
-        //printf("universe content at index %d = %s\n", i, universe->content[i]);
-    }
-
     return universe;
 }
 
@@ -419,6 +1728,7 @@ Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int a
         printf("(%s %s)\n", getItemName(*subjects[0].universe_p, pair.x), getItemName(*subjects[0].universe_p, pair.y));
         return createEmptySubject(id);
     }
+
     if (arg2 == -1 && arg3 == -1) {
         if (!strcmp(cmdWord, CMD_REFLEXIVE)) {
             printBool(isReflexive(subjects[arg1].relation_p, subjects[0].universe_p->size));
@@ -458,10 +1768,11 @@ Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int a
         }
     }
 
-    // Functions requiering stes as args
+    // Functions requiring sets as args
+    /// In the version we submitted the following condition could never be true
+    /// This is a fixed version.
     if (subjects[arg2].subjectType == SetType
-        && subjects[arg3].subjectType == SetType
-        && arg2 == -1 && arg3 == -1) {
+        && subjects[arg3].subjectType == SetType) {
         if (!strcmp(cmdWord, CMD_INJECTIVE)) {
             printBool(isInjective(subjects[arg1].relation_p, subjects[arg2].set_p, subjects[arg3].set_p));
             return createEmptySubject(id);
@@ -483,7 +1794,7 @@ Subject processRelationCommand(int id, char* cmdWord, int  arg1, int arg2, int a
 }
 
 /**
- * A fucntion for carring out operations on Sets
+ * A function for carrying out operations on Sets
  * @param id ID of the line.
  * @param cmdWord the string representing the command alias
  * @param arg1 The line first supplied line number parsed as int.
@@ -507,11 +1818,11 @@ Subject processSetCommand(int id, char* cmdWord, int  arg1, int arg2, Subject* s
     }
 
     // Processing commands with two inputs
+    if (!strcmp(cmdWord, CMD_SELECT) && arg2 != -1) {
+        printf("%s\n", getItemName(*subjects[0].universe_p, selectSet(subjects[arg1].set_p)));
+        return createEmptySubject(id);
+    }
     if (arg2 != -1 && (subjects[arg2].subjectType == SetType || subjects[arg2].subjectType == UniverseType)) {
-        if (!strcmp(cmdWord, CMD_SELECT) && arg2 != -1) {
-            printf("%s\n", getItemName(*subjects[0].universe_p, selectSet(subjects[arg1].set_p)));
-            return createEmptySubject(id);
-        }
         if (!strcmp(cmdWord, CMD_UNION)) {
             return createSubjectFromSetPtr(setUnion(subjects[arg1].set_p, subjects[arg2].set_p));
         }
@@ -611,8 +1922,7 @@ Subject processCommand(int id, int size, char* contentString, GrowSubj* gsubj) {
  * @return created subject with specified values
  */
 
-Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe, GrowSubj* gsubj)
-{
+Subject parseLine(int id, int size, char* contentString, SubjectType type, Universe* universe, GrowSubj* gsubj) {
     Relation* relation = NULL;
     Set* set = NULL;
     Universe* newUniverse = NULL;
@@ -649,9 +1959,7 @@ Subject parseLine(int id, int size, char* contentString, SubjectType type, Unive
  * @return returns SetType related to the character
  */
 
-
-SubjectType setType(char character)
-{
+SubjectType setType(char character) {
     switch (character) {
     case 'S':
         return SetType;
@@ -863,18 +2171,11 @@ void parseFile(char* filePath)
         {
             parseFileElseCheck(character, &seenSpace, &afterFirstChar, &count);
             growStrAdd(gstr, character);
-            //printf("Element %c added\n", character);
-            //printf("%s\n", gstr->content);
         }
     }
-    //  Convert Growstr into an array.
 
-    //  Send the line into a processing fucntion. (Returns Subject)
-    // parseLine();
     parseFileEndCheck(growSubjLength, gsubj, wasCommandSet, wasRelationSet, wasSetSet);
 
-    //free(gsubj->content[0].set_p);
-    //destroyUniverse(universe);
     destroyGrowSubj(gsubj);
 
     if (fclose(file))
@@ -889,14 +2190,12 @@ void parseFile(char* filePath)
  * @param argv values of argumets.
  * @return Path to file from arg or NULL if no path was given
 */
-char* readFilePath(int argc, char** argv)
-{
+char* readFilePath(int argc, char** argv) {
     if (argc != 2)
     {
         return NULL;
     }
 
-    // We can add more checks here lol.
     return argv[1];
 }
 
@@ -914,19 +2213,6 @@ int main(int argc, char** argv)
     }
 
     parseFile(filePath);
-    /*
-    char contentString[] = "S a b c x";
-
-    Set *testSet = setCreate(1, 5, contentString);
-    printf("set id: %d set size: %d\n", testSet->id, testSet->size);
-    for (int i =Error 0; i < 5; i++)
-    {
-        printf("set content string at index %d = %s\n", i, testSet->content[i]);
-    }
-*/
-// Parsing the content into structs.
-//parseFile(filePath); // TODO: Dunno co to bude vracet to vymyslíme později
     return 0;
 
-    //U S R C
 }

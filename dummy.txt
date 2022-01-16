@@ -27,3 +27,6 @@ C transitive 4
 C function 4
 C domain 4
 C codomain 4
+C injective 4 2 3
+C surjective 4 2 3
+C bijective 4 2 3
